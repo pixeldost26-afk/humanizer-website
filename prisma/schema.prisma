@@ -1,0 +1,221 @@
+// Prisma Schema for HumanizeAI
+// Compatible with SQLite (for instant local zero-config testing) and PostgreSQL (for production).
+// To switch to PostgreSQL in production: change provider to "postgresql" and update DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  image         String?
+  role          String          @default("USER") // "USER" | "ADMIN"
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  subscription  Subscription?
+  creditBalance CreditBalance?
+  documents     Document[]
+  generations   Generation[]
+  toolRequests  ToolRequest[]
+  payments      Payment[]
+  apiKeys       ApiKey[]
+  adminLogs     AdminLog[]
+
+  @@index([email])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  planId               String    @default("FREE") // "FREE" | "PRO" | "BUSINESS"
+  status               String    @default("ACTIVE") // "ACTIVE" | "CANCELED" | "PAST_DUE" | "TRIALING"
+  currentPeriodStart   DateTime  @default(now())
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean   @default(false)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  razorpaySubscriptionId String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([stripeCustomerId])
+}
+
+model CreditBalance {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  monthlyCredits Int      @default(1000)
+  usedCredits    Int      @default(0)
+  bonusCredits   Int      @default(0)
+  lastRefillDate DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  content     String
+  toolType    String   // "HUMANIZER" | "DETECTOR" | "WRITER" | "PARAPHRASER" | "GRAMMAR" | "SUMMARIZER" | "TONE"
+  wordCount   Int      @default(0)
+  charCount   Int      @default(0)
+  tags        String?  // comma-separated tags or JSON string
+  isFavorite  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generations Generation[]
+
+  @@index([userId])
+  @@index([toolType])
+}
+
+model Generation {
+  id             String    @id @default(cuid())
+  userId         String
+  documentId     String?
+  tool           String    // "HUMANIZER", "DETECTOR", etc.
+  inputSnippet   String
+  outputText     String
+  wordCount      Int       @default(0)
+  creditsCharged Int       @default(0)
+  metadata       String?   // JSON string storing options, scores, etc.
+  createdAt      DateTime  @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([tool])
+  @@index([documentId])
+}
+
+model ToolRequest {
+  id             String   @id @default(cuid())
+  userId         String?
+  tool           String   // "HUMANIZER", "DETECTOR", etc.
+  inputTokens    Int      @default(0)
+  outputTokens   Int      @default(0)
+  wordsProcessed Int      @default(0)
+  durationMs     Int      @default(0)
+  status         String   @default("SUCCESS") // "SUCCESS" | "FAILED"
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([tool])
+  @@index([createdAt])
+}
+
+model Usage {
+  id          String   @id @default(cuid())
+  userId      String
+  date        String   // "YYYY-MM-DD"
+  wordsTotal  Int      @default(0)
+  checksCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  userId        String
+  amount        Int      // in cents or paise
+  currency      String   @default("USD")
+  provider      String   // "STRIPE" | "RAZORPAY"
+  status        String   // "SUCCEEDED" | "PENDING" | "FAILED"
+  transactionId String   @unique
+  receiptUrl    String?
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  userId      String
+  name        String
+  keyPrefix   String
+  keyHash     String    @unique
+  permissions String    @default("ALL") // "ALL" | "READ_ONLY"
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  revokedAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AdminLog {
+  id           String   @id @default(cuid())
+  adminId      String
+  action       String   // e.g. "UPDATE_USER_ROLE", "ADD_CREDITS", "SUSPEND_USER"
+  targetUserId String?
+  details      String?  // JSON string
+  createdAt    DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([targetUserId])
+}
