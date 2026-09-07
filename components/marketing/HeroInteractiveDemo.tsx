@@ -264,7 +264,7 @@ export function HeroInteractiveDemo() {
               </div>
               <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
                 <span>Certified 0% on Grammarly & Turnitin</span>
-                <Link href="/humanizer" prefetch={true} className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+                <Link href="/signup?callbackUrl=/humanizer" prefetch={true} className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
                   Full Editor →
                 </Link>
               </div>
@@ -338,7 +338,7 @@ export function HeroInteractiveDemo() {
             <span>Unlimited Words</span>
           </div>
           <Link
-            href="/humanizer"
+            href="/signup?callbackUrl=/humanizer"
             prefetch={true}
             className="inline-flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
           >

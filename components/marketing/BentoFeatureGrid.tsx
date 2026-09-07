@@ -83,7 +83,7 @@ export function BentoFeatureGrid() {
                 Guaranteed 0% Detection • Preserves Citations & Quotes
               </span>
               <Link
-                href="/humanizer"
+                href="/signup?callbackUrl=/humanizer"
                 prefetch={true}
                 className="btn-primary text-xs active:scale-[0.98] transition-all"
               >
@@ -173,7 +173,7 @@ export function BentoFeatureGrid() {
 
             <div className="pt-6 mt-4 border-t border-border/60">
               <Link
-                href="/humanizer"
+                href="/signup?callbackUrl=/ai-detector"
                 prefetch={true}
                 className="btn-secondary w-full text-xs active:scale-[0.98] transition-all"
               >
@@ -216,7 +216,7 @@ export function BentoFeatureGrid() {
 
             <div className="pt-6 mt-4 border-t border-border/60">
               <Link
-                href="/paraphraser"
+                href="/signup?callbackUrl=/paraphraser"
                 prefetch={true}
                 className="btn-secondary w-full text-xs active:scale-[0.98] transition-all"
               >
@@ -259,7 +259,7 @@ export function BentoFeatureGrid() {
 
             <div className="pt-6 mt-4 border-t border-border/60">
               <Link
-                href="/humanizer"
+                href="/signup?callbackUrl=/humanizer"
                 prefetch={true}
                 className="btn-secondary w-full text-xs active:scale-[0.98] transition-all"
               >

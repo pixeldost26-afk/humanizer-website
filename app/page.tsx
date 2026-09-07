@@ -151,7 +151,7 @@ export default function HomePage() {
             </p>
             <div className="pt-2">
               <Link
-                href="/humanizer"
+                href="/signup?callbackUrl=/humanizer"
                 prefetch={true}
                 className="btn-primary text-base px-8 py-3.5 rounded-xl shadow-lg shadow-indigo-600/20 active:scale-[0.98] transition-all"
               >
