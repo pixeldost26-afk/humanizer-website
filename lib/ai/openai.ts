@@ -48,6 +48,39 @@ export class OpenAICompatibleProvider implements IAIEngine {
     this.fallback = new DemoMockProvider();
   }
 
+  private async getAvailableModel(): Promise<string | null> {
+    try {
+      const res = await fetch(`${this.baseUrl}/models`, {
+        headers: { Authorization: `Bearer ${this.apiKey}` },
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      const ids: string[] = (data.data || []).map((m: any) => m.id);
+      console.log(`[AI Provider] Available models on ${this.baseUrl}:`, ids);
+
+      const textModels = ids.filter((id) => 
+        !id.includes("whisper") && 
+        !id.includes("embed") && 
+        !id.includes("tts") && 
+        !id.includes("vision") && 
+        !id.includes("guard")
+      );
+
+      const preferred = textModels.find((id) => 
+        id.includes("gpt") || 
+        id.includes("llama") || 
+        id.includes("qwen") || 
+        id.includes("mixtral") || 
+        id.includes("gemma")
+      );
+
+      return preferred || textModels[0] || ids[0] || null;
+    } catch (e) {
+      console.warn("Could not query /models:", e);
+      return null;
+    }
+  }
+
   private async callChat(systemPrompt: string, userPrompt: string, jsonMode = false, retryWithModel?: string): Promise<string> {
     const activeModel = retryWithModel || this.model;
     const res = await fetch(`${this.baseUrl}/chat/completions`, {
@@ -69,14 +102,14 @@ export class OpenAICompatibleProvider implements IAIEngine {
 
     if (!res.ok) {
       const errText = await res.text();
-      // If 404 model_not_found, automatically retry with the guaranteed active model
+      // If 404 model_not_found, dynamically fetch the active models for this API key and auto-switch
       if (res.status === 404 && !retryWithModel) {
-        if (this.baseUrl.includes("groq")) {
-          console.warn(`Model ${activeModel} not found on Groq, retrying with llama-3.1-8b-instant...`);
-          return this.callChat(systemPrompt, userPrompt, jsonMode, "llama-3.1-8b-instant");
-        } else if (this.baseUrl.includes("openai")) {
-          console.warn(`Model ${activeModel} not found on OpenAI, retrying with gpt-4o-mini...`);
-          return this.callChat(systemPrompt, userPrompt, jsonMode, "gpt-4o-mini");
+        console.warn(`Model '${activeModel}' 404'd. Fetching active models from ${this.baseUrl}...`);
+        const fallbackModel = await this.getAvailableModel();
+        if (fallbackModel && fallbackModel !== activeModel) {
+          console.log(`Auto-switched to active model: ${fallbackModel}`);
+          this.model = fallbackModel;
+          return this.callChat(systemPrompt, userPrompt, jsonMode, fallbackModel);
         }
       }
       throw new Error(`AI Provider HTTP Error (${res.status}): ${errText}`);
