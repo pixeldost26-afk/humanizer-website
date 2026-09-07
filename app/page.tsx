@@ -48,7 +48,7 @@ export default function HomePage() {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <Link
-                href="/humanizer"
+                href="/signup?callbackUrl=/humanizer"
                 prefetch={true}
                 className="btn-primary text-base px-7 py-3 rounded-xl shadow-md shadow-indigo-600/20 active:scale-[0.98] transition-all"
               >
@@ -57,7 +57,7 @@ export default function HomePage() {
                 <ArrowRight className="w-4 h-4 ml-0.5" />
               </Link>
               <Link
-                href="/ai-detector"
+                href="/signup?callbackUrl=/ai-detector"
                 prefetch={true}
                 className="btn-secondary text-base px-7 py-3 rounded-xl active:scale-[0.98] transition-all"
               >

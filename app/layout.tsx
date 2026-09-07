@@ -53,8 +53,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen flex flex-col antialiased`}>
+    <html lang="en" className="dark" style={{ colorScheme: "dark" }} suppressHydrationWarning>
+      <body className={`${inter.className} min-h-screen flex flex-col antialiased bg-[#0B0F19] text-foreground`}>
         <AuthProvider>
           <ThemeProvider>
             <ToastProvider>{children}</ToastProvider>
