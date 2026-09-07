@@ -27,7 +27,7 @@ export function getAIEngine(): IAIEngine {
   lastBaseUrl = baseUrl;
   lastModel = model;
 
-  if (provider === "openai" && apiKey && apiKey.trim() !== "") {
+  if ((provider === "openai" || Boolean(apiKey)) && apiKey && apiKey.trim() !== "") {
     cachedEngine = new OpenAICompatibleProvider(apiKey, baseUrl, model);
   } else {
     // Default to upgraded high-fidelity heuristic provider
