@@ -22,7 +22,17 @@ export async function POST(req: NextRequest) {
 
     const { prompt, contentType, tone, length, language, audience, creativity } = parseResult.data;
     const user = await getCurrentUser();
-    const userId = user?.id || "demo-guest-user";
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Please sign up or sign in to use the AI Writer.",
+          requireAuth: true,
+        },
+        { status: 401 }
+      );
+    }
+    const userId = user.id;
 
     // Approximate words based on requested length: short ~150, med ~350, long ~700
     const estimatedWords = length === "short" ? 150 : length === "medium" ? 350 : 700;

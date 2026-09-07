@@ -38,7 +38,7 @@ interface AppShellProps {
 export function AppShell({ children, title, description }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [userCredits, setUserCredits] = useState<{
@@ -46,26 +46,59 @@ export function AppShell({ children, title, description }: AppShellProps) {
     total: number;
     plan: string;
   }>({
-    available: 950,
+    available: 1000,
     total: 1000,
     plan: "FREE",
   });
 
   useEffect(() => {
-    // Fetch live usage stats
-    fetch("/api/usage")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.data) {
-          setUserCredits({
-            available: data.data.balance.available,
-            total: data.data.balance.total,
-            plan: data.data.plan,
-          });
-        }
-      })
-      .catch(() => {});
-  }, [pathname]);
+    if (status === "unauthenticated") {
+      router.push(`/signup?callbackUrl=${encodeURIComponent(pathname)}`);
+    }
+  }, [status, pathname, router]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetch("/api/usage")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.data) {
+            setUserCredits({
+              available: data.data.balance.available,
+              total: data.data.balance.total,
+              plan: data.data.plan,
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [pathname, status]);
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg animate-pulse">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <p className="text-xs text-muted-foreground font-medium">Loading studio...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "unauthenticated") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg animate-pulse">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <p className="text-xs text-muted-foreground font-medium">Redirecting to Sign Up...</p>
+        </div>
+      </div>
+    );
+  }
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },

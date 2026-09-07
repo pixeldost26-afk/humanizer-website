@@ -23,7 +23,17 @@ export async function POST(req: NextRequest) {
 
     const { text, tone } = parseResult.data;
     const user = await getCurrentUser();
-    const userId = user?.id || "demo-guest-user";
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Please sign up or sign in to use the Tone Rewriter.",
+          requireAuth: true,
+        },
+        { status: 401 }
+      );
+    }
+    const userId = user.id;
     const wordCount = countWords(text);
 
     const creditResult = await checkAndDeductCredits({
