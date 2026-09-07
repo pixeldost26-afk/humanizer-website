@@ -27,23 +27,18 @@ export class OpenAICompatibleProvider implements IAIEngine {
   constructor(apiKey: string, baseUrl?: string, model?: string) {
     this.apiKey = apiKey.trim();
 
-    const isGroqKey = this.apiKey.startsWith("gsk_");
-    const isLlamaModel = model?.toLowerCase().includes("llama");
-
-    if (baseUrl && baseUrl.trim() !== "") {
-      this.baseUrl = baseUrl.trim();
-    } else if (isGroqKey || isLlamaModel) {
-      this.baseUrl = "https://api.groq.com/openai/v1";
+    if (this.apiKey.startsWith("gsk_")) {
+      // Definitively a Groq API Key
+      this.baseUrl = baseUrl && baseUrl.trim() !== "" ? baseUrl.trim() : "https://api.groq.com/openai/v1";
+      this.model = model && !model.toLowerCase().includes("gpt") ? model.trim() : "llama-3.3-70b-versatile";
+    } else if (this.apiKey.startsWith("sk-")) {
+      // Definitively an OpenAI API Key
+      this.baseUrl = baseUrl && baseUrl.trim() !== "" && !baseUrl.includes("groq") ? baseUrl.trim() : "https://api.openai.com/v1";
+      // If user accidentally put a llama model with an OpenAI key, auto-correct to gpt-4o-mini
+      this.model = model && !model.toLowerCase().includes("llama") ? model.trim() : "gpt-4o-mini";
     } else {
-      this.baseUrl = "https://api.openai.com/v1";
-    }
-
-    if (model && model.trim() !== "") {
-      this.model = model.trim();
-    } else if (isGroqKey) {
-      this.model = "llama-3.3-70b-versatile";
-    } else {
-      this.model = "gpt-4o-mini";
+      this.baseUrl = baseUrl && baseUrl.trim() !== "" ? baseUrl.trim() : "https://api.openai.com/v1";
+      this.model = model && model.trim() !== "" ? model.trim() : "gpt-4o-mini";
     }
 
     this.fallback = new DemoMockProvider();
