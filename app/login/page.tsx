@@ -192,7 +192,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-background relative overflow-hidden">
+    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-[#0B0F19] text-foreground relative overflow-hidden">
       <div className="glow-orb w-96 h-96 bg-indigo-600/15 -top-20 left-1/2 -translate-x-1/2" />
       <Suspense fallback={<div className="text-xs text-muted-foreground">Loading...</div>}>
         <LoginForm />

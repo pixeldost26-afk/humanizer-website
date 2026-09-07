@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -6,6 +6,13 @@ import { AuthProvider } from "@/components/auth-provider";
 import { ToastProvider } from "@/components/ui/toast";
 
 const inter = Inter({ subsets: ["latin"] });
+
+export const viewport: Viewport = {
+  themeColor: "#0B0F19",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "HumanizeAI — Make AI Writing Sound Naturally Yours",
@@ -53,8 +60,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" style={{ colorScheme: "dark" }} suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen flex flex-col antialiased bg-[#0B0F19] text-foreground`}>
+    <html lang="en" className="dark" style={{ backgroundColor: "#0B0F19", colorScheme: "dark" }} suppressHydrationWarning>
+      <head>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `html, body { background-color: #0B0F19 !important; color-scheme: dark !important; color: #F8FAFC !important; }`,
+          }}
+        />
+      </head>
+      <body
+        className={`${inter.className} min-h-screen flex flex-col antialiased bg-[#0B0F19] text-foreground`}
+        style={{ backgroundColor: "#0B0F19" }}
+      >
         <AuthProvider>
           <ThemeProvider>
             <ToastProvider>{children}</ToastProvider>
