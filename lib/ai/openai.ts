@@ -49,7 +49,7 @@ export class OpenAICompatibleProvider implements IAIEngine {
     this.fallback = new DemoMockProvider();
   }
 
-  private async getAvailableModel(): Promise<string | null> {
+  private async getAvailableModel(excludeModel?: string): Promise<string | null> {
     try {
       const res = await fetch(`${this.baseUrl}/models`, {
         headers: { Authorization: `Bearer ${this.apiKey}` },
@@ -60,6 +60,7 @@ export class OpenAICompatibleProvider implements IAIEngine {
       console.log(`[AI Provider] Available models on ${this.baseUrl}:`, ids);
 
       const textModels = ids.filter((id) => 
+        id !== excludeModel &&
         !id.includes("whisper") && 
         !id.includes("embed") && 
         !id.includes("tts") && 
@@ -67,22 +68,28 @@ export class OpenAICompatibleProvider implements IAIEngine {
         !id.includes("guard")
       );
 
-      const preferred = textModels.find((id) => 
-        id.includes("gpt") || 
-        id.includes("llama") || 
-        id.includes("qwen") || 
-        id.includes("mixtral") || 
-        id.includes("gemma")
-      );
+      // Prioritize fast text models with generous rate limits (e.g. llama, gpt) over strict models like qwen
+      const preferred = 
+        textModels.find((id) => id.includes("llama-3.1") || id.includes("llama-3.2")) ||
+        textModels.find((id) => id.includes("llama") || id.includes("gpt")) ||
+        textModels.find((id) => id.includes("mixtral") || id.includes("gemma")) ||
+        textModels.find((id) => id.includes("qwen")) ||
+        textModels[0];
 
-      return preferred || textModels[0] || ids[0] || null;
+      return preferred || null;
     } catch (e) {
       console.warn("Could not query /models:", e);
       return null;
     }
   }
 
-  private async callChat(systemPrompt: string, userPrompt: string, jsonMode = false, retryWithModel?: string): Promise<string> {
+  private async callChat(
+    systemPrompt: string,
+    userPrompt: string,
+    jsonMode = false,
+    retryWithModel?: string,
+    maxTokens = 750
+  ): Promise<string> {
     const activeModel = retryWithModel || this.model;
     const res = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
@@ -97,20 +104,21 @@ export class OpenAICompatibleProvider implements IAIEngine {
           { role: "user", content: userPrompt },
         ],
         temperature: 0.7,
+        max_tokens: maxTokens, // Keeps generation under Groq's 1,000 output tokens per minute limit
         ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
       }),
     });
 
     if (!res.ok) {
       const errText = await res.text();
-      // If 404 model_not_found, dynamically fetch the active models for this API key and auto-switch
-      if (res.status === 404 && !retryWithModel) {
-        console.warn(`Model '${activeModel}' 404'd. Fetching active models from ${this.baseUrl}...`);
-        const fallbackModel = await this.getAvailableModel();
+      // If 404 (model not found) or 429 (token limit exceeded on a specific model), dynamically fallback
+      if ((res.status === 404 || res.status === 429) && !retryWithModel) {
+        console.warn(`Model '${activeModel}' returned HTTP ${res.status}. Fetching alternative model...`);
+        const fallbackModel = await this.getAvailableModel(activeModel);
         if (fallbackModel && fallbackModel !== activeModel) {
-          console.log(`Auto-switched to active model: ${fallbackModel}`);
+          console.log(`Auto-switched to alternative model: ${fallbackModel}`);
           this.model = fallbackModel;
-          return this.callChat(systemPrompt, userPrompt, jsonMode, fallbackModel);
+          return this.callChat(systemPrompt, userPrompt, jsonMode, fallbackModel, Math.min(maxTokens, 600));
         }
       }
       throw new Error(`AI Provider HTTP Error (${res.status}): ${errText}`);
@@ -235,7 +243,8 @@ Target Length: ${options.length} (short: ~150 words, medium: ~350 words, long: ~
 Format output clearly with markdown headings where appropriate.`;
       }
 
-      const content = await this.callChat(systemPrompt, prompt);
+      const maxTokens = options.length === "short" ? 350 : options.length === "long" ? 800 : 650;
+      const content = await this.callChat(systemPrompt, prompt, false, undefined, maxTokens);
       const wordCount = countWords(content);
 
       return {
