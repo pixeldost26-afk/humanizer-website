@@ -30,7 +30,11 @@ export class OpenAICompatibleProvider implements IAIEngine {
     if (this.apiKey.startsWith("gsk_")) {
       // Definitively a Groq API Key
       this.baseUrl = baseUrl && baseUrl.trim() !== "" ? baseUrl.trim() : "https://api.groq.com/openai/v1";
-      this.model = model && !model.toLowerCase().includes("gpt") ? model.trim() : "llama-3.3-70b-versatile";
+      let m = model && !model.toLowerCase().includes("gpt") ? model.trim() : "llama-3.1-8b-instant";
+      if (m.includes("3.3-70b")) {
+        m = "llama-3.1-8b-instant";
+      }
+      this.model = m;
     } else if (this.apiKey.startsWith("sk-")) {
       // Definitively an OpenAI API Key
       this.baseUrl = baseUrl && baseUrl.trim() !== "" && !baseUrl.includes("groq") ? baseUrl.trim() : "https://api.openai.com/v1";
@@ -44,7 +48,8 @@ export class OpenAICompatibleProvider implements IAIEngine {
     this.fallback = new DemoMockProvider();
   }
 
-  private async callChat(systemPrompt: string, userPrompt: string, jsonMode = false): Promise<string> {
+  private async callChat(systemPrompt: string, userPrompt: string, jsonMode = false, retryWithModel?: string): Promise<string> {
+    const activeModel = retryWithModel || this.model;
     const res = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
@@ -52,7 +57,7 @@ export class OpenAICompatibleProvider implements IAIEngine {
         Authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify({
-        model: this.model,
+        model: activeModel,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -64,6 +69,16 @@ export class OpenAICompatibleProvider implements IAIEngine {
 
     if (!res.ok) {
       const errText = await res.text();
+      // If 404 model_not_found, automatically retry with the guaranteed active model
+      if (res.status === 404 && !retryWithModel) {
+        if (this.baseUrl.includes("groq")) {
+          console.warn(`Model ${activeModel} not found on Groq, retrying with llama-3.1-8b-instant...`);
+          return this.callChat(systemPrompt, userPrompt, jsonMode, "llama-3.1-8b-instant");
+        } else if (this.baseUrl.includes("openai")) {
+          console.warn(`Model ${activeModel} not found on OpenAI, retrying with gpt-4o-mini...`);
+          return this.callChat(systemPrompt, userPrompt, jsonMode, "gpt-4o-mini");
+        }
+      }
       throw new Error(`AI Provider HTTP Error (${res.status}): ${errText}`);
     }
 
