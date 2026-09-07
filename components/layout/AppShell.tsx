@@ -76,7 +76,7 @@ export function AppShell({ children, title, description }: AppShellProps) {
 
   if (status === "loading" || status === "unauthenticated") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0B0F19] text-foreground">
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg animate-pulse">
             <Sparkles className="w-5 h-5" />

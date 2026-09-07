@@ -8,8 +8,10 @@ import { ToastProvider } from "@/components/ui/toast";
 const inter = Inter({ subsets: ["latin"] });
 
 export const viewport: Viewport = {
-  themeColor: "#0B0F19",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B0F19" },
+  ],
   width: "device-width",
   initialScale: 1,
 };
@@ -60,17 +62,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" style={{ backgroundColor: "#0B0F19", colorScheme: "dark" }} suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
-        <style
+        <script
           dangerouslySetInnerHTML={{
-            __html: `html, body { background-color: #0B0F19 !important; color-scheme: dark !important; color: #F8FAFC !important; }`,
+            __html: `(function(){try{var t=localStorage.getItem('humanize-theme');var d=t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)||(!t);if(t==='light')d=false;var el=document.documentElement;if(d){el.classList.add('dark');el.classList.remove('light');el.style.colorScheme='dark';}else{el.classList.remove('dark');el.classList.add('light');el.style.colorScheme='light';}}catch(e){}})();`,
           }}
         />
       </head>
       <body
-        className={`${inter.className} min-h-screen flex flex-col antialiased bg-[#0B0F19] text-foreground`}
-        style={{ backgroundColor: "#0B0F19" }}
+        className={`${inter.className} min-h-screen flex flex-col antialiased bg-background text-foreground`}
       >
         <AuthProvider>
           <ThemeProvider>
