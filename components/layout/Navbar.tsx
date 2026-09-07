@@ -208,7 +208,7 @@ export function Navbar() {
                 Sign In
               </Link>
               <Link
-                href="/humanizer"
+                href="/signup?callbackUrl=/humanizer"
                 prefetch={true}
                 className="btn-primary"
               >

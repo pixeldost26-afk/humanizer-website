@@ -13,6 +13,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +43,7 @@ function LoginForm() {
         toast({ title: "Sign In Failed", description: res.error, type: "error" });
       } else {
         toast({ title: "Welcome back!", type: "success" });
-        router.push("/dashboard");
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch {
@@ -56,7 +57,7 @@ function LoginForm() {
     setIsGoogleLoading(true);
     setErrorMessage("");
     try {
-      await signIn("google", { callbackUrl: "/dashboard" });
+      await signIn("google", { callbackUrl });
     } catch (err: any) {
       setIsGoogleLoading(false);
       setErrorMessage("Unable to connect with Google right now.");
@@ -178,7 +179,10 @@ function LoginForm() {
       {/* Footer link */}
       <p className="text-center text-xs text-muted-foreground">
         Don't have an account?{" "}
-        <Link href="/signup" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+        <Link
+          href={callbackUrl !== "/dashboard" ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/signup"}
+          className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+        >
           Sign up for free
         </Link>
       </p>

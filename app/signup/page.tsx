@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Sparkles, Lock, Mail, User, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
@@ -10,8 +10,10 @@ import { GoogleIcon } from "@/components/ui/google-icon";
 
 function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
 
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,7 +52,7 @@ function SignupForm() {
         type: "success",
       });
 
-      // 2. Automatically log the newly registered user in
+      // 2. Automatically log the newly registered user in and go to tool
       const loginRes = await signIn("credentials", {
         email: email.trim(),
         password,
@@ -60,7 +62,7 @@ function SignupForm() {
       if (loginRes?.error) {
         router.push("/login?registered=true");
       } else {
-        router.push("/dashboard");
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch {
@@ -74,7 +76,7 @@ function SignupForm() {
     setIsGoogleLoading(true);
     setErrorMessage("");
     try {
-      await signIn("google", { callbackUrl: "/dashboard" });
+      await signIn("google", { callbackUrl });
     } catch {
       setIsGoogleLoading(false);
       setErrorMessage("Unable to connect with Google right now.");
@@ -196,7 +198,10 @@ function SignupForm() {
 
       <p className="text-center text-xs text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/login" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+        <Link
+          href={callbackUrl !== "/dashboard" ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"}
+          className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+        >
           Sign in
         </Link>
       </p>
