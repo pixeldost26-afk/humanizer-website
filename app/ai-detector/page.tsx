@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { DetectionGauge } from "@/components/editor/DetectionGauge";
 import { SentenceAnalysisViewer } from "@/components/editor/SentenceAnalysisViewer";
-import { ShieldCheck, Upload, Trash2, Clipboard, RefreshCw, AlertTriangle } from "lucide-react";
+import { ShieldCheck, Upload, Trash2, Clipboard, RefreshCw } from "lucide-react";
 import { DetectionResult } from "@/lib/ai";
 import { useToast } from "@/components/ui/toast";
 import { countWords, countCharacters } from "@/lib/utils";
@@ -105,17 +105,6 @@ export default function AIDetectorPage() {
       description="Sentence-level probabilistic analysis with perplexity and burstiness metrics."
     >
       <div className="max-w-5xl mx-auto space-y-6">
-        {/* Transparent Disclaimer Banner */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-950 dark:text-amber-200">
-          <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-          <p className="leading-relaxed">
-            <strong>Important Scientific Notice:</strong> AI detection is probabilistic and may
-            produce false positives or false negatives. Results should not be treated as definitive
-            proof of authorship. Our engine provides heuristic indicators of lexical predictability
-            and syntax variation.
-          </p>
-        </div>
-
         {/* Input Textarea Card */}
         <div className="rounded-3xl bg-card border border-border/80 shadow-sm overflow-hidden space-y-2">
           {/* Header controls */}
