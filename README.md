@@ -87,6 +87,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
+## Deploy to Render (render.com)
+
+Ready to deploy? Follow our complete [Render Deployment Guide](./RENDER_DEPLOYMENT.md) with support for automated 1-click Blueprints (`render.yaml`) and managed PostgreSQL.
+
+---
+
 ## Pre-Seeded Test Credentials
 
 | Role | Email | Password | Pre-loaded Plan |

@@ -68,74 +68,89 @@ async function main() {
   });
   console.log("✅ Demo user ready:", user.email);
 
-  // 3. Seed Sample Documents & Generations for Alex Johnson
-  const sampleDocs = [
-    {
-      title: "Quarterly Marketing Strategy Memo",
-      content:
-        "In today's fast-moving market, our primary goal is building authentic customer connections. Rather than relying on generic outreach, we are focusing on genuine educational content and active community discussions.",
-      toolType: "HUMANIZER",
-      wordCount: 32,
-      charCount: 228,
-      tags: "marketing, strategy",
-    },
-    {
-      title: "AI Detection Scan: Research Abstract",
-      content:
-        "Furthermore, the empirical observations substantiate the theoretical framework. The intricate tapestry of multifaceted variables demonstrates a pivotal correlation across all parameters.",
-      toolType: "DETECTOR",
-      wordCount: 22,
-      charCount: 184,
-      tags: "research, analysis",
-    },
-    {
-      title: "Product Launch Email Draft",
-      content:
-        "Subject: We just released HumanizeAI 2.0!\n\nHey everyone, we've spent the past six months rebuilding our writing assistant from the ground up. Try it today and see how natural your drafts become.",
-      toolType: "WRITER",
-      wordCount: 36,
-      charCount: 215,
-      tags: "email, launch",
-    },
-  ];
+  // 3. Seed Sample Documents & Generations for Alex Johnson (if not already seeded)
+  const existingDocCount = await prisma.document.count({
+    where: { userId: user.id },
+  });
 
-  for (const doc of sampleDocs) {
-    const createdDoc = await prisma.document.create({
-      data: {
-        userId: user.id,
-        ...doc,
+  if (existingDocCount === 0) {
+    const sampleDocs = [
+      {
+        title: "Quarterly Marketing Strategy Memo",
+        content:
+          "In today's fast-moving market, our primary goal is building authentic customer connections. Rather than relying on generic outreach, we are focusing on genuine educational content and active community discussions.",
+        toolType: "HUMANIZER",
+        wordCount: 32,
+        charCount: 228,
+        tags: "marketing, strategy",
       },
-    });
+      {
+        title: "AI Detection Scan: Research Abstract",
+        content:
+          "Furthermore, the empirical observations substantiate the theoretical framework. The intricate tapestry of multifaceted variables demonstrates a pivotal correlation across all parameters.",
+        toolType: "DETECTOR",
+        wordCount: 22,
+        charCount: 184,
+        tags: "research, analysis",
+      },
+      {
+        title: "Product Launch Email Draft",
+        content:
+          "Subject: We just released HumanizeAI 2.0!\n\nHey everyone, we've spent the past six months rebuilding our writing assistant from the ground up. Try it today and see how natural your drafts become.",
+        toolType: "WRITER",
+        wordCount: 36,
+        charCount: 215,
+        tags: "email, launch",
+      },
+    ];
 
-    await prisma.generation.create({
-      data: {
-        userId: user.id,
-        documentId: createdDoc.id,
-        tool: doc.toolType,
-        inputSnippet: doc.content.slice(0, 100),
-        outputText: doc.content,
-        wordCount: doc.wordCount,
-        creditsCharged: 5,
-      },
-    });
+    for (const doc of sampleDocs) {
+      const createdDoc = await prisma.document.create({
+        data: {
+          userId: user.id,
+          ...doc,
+        },
+      });
+
+      await prisma.generation.create({
+        data: {
+          userId: user.id,
+          documentId: createdDoc.id,
+          tool: doc.toolType,
+          inputSnippet: doc.content.slice(0, 100),
+          outputText: doc.content,
+          wordCount: doc.wordCount,
+          creditsCharged: 5,
+        },
+      });
+    }
+    console.log("✅ Sample documents and generations created.");
+  } else {
+    console.log("ℹ️ Sample documents already exist, skipping.");
   }
 
-  // 4. Seed tool requests for analytics
-  const tools = ["HUMANIZER", "DETECTOR", "WRITER", "PARAPHRASER", "GRAMMAR", "SUMMARIZER", "TONE"];
-  for (let i = 0; i < 20; i++) {
-    const randomTool = tools[Math.floor(Math.random() * tools.length)];
-    const words = Math.floor(50 + Math.random() * 450);
-    await prisma.toolRequest.create({
-      data: {
-        userId: i % 2 === 0 ? user.id : admin.id,
-        tool: randomTool,
-        wordsProcessed: words,
-        inputTokens: Math.round(words * 1.3),
-        outputTokens: Math.round(words * 1.2),
-        durationMs: Math.floor(400 + Math.random() * 1200),
-        status: "SUCCESS",
-      },
-    });
+  // 4. Seed tool requests for analytics (if not already seeded)
+  const existingRequestCount = await prisma.toolRequest.count();
+  if (existingRequestCount === 0) {
+    const tools = ["HUMANIZER", "DETECTOR", "WRITER", "PARAPHRASER", "GRAMMAR", "SUMMARIZER", "TONE"];
+    for (let i = 0; i < 20; i++) {
+      const randomTool = tools[Math.floor(Math.random() * tools.length)];
+      const words = Math.floor(50 + Math.random() * 450);
+      await prisma.toolRequest.create({
+        data: {
+          userId: i % 2 === 0 ? user.id : admin.id,
+          tool: randomTool,
+          wordsProcessed: words,
+          inputTokens: Math.round(words * 1.3),
+          outputTokens: Math.round(words * 1.2),
+          durationMs: Math.floor(400 + Math.random() * 1200),
+          status: "SUCCESS",
+        },
+      });
+    }
+    console.log("✅ Tool request analytics created.");
+  } else {
+    console.log("ℹ️ Tool request analytics already exist, skipping.");
   }
 
   // 5. Seed daily usage records
