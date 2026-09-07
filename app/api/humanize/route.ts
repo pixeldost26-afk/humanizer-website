@@ -56,12 +56,25 @@ export async function POST(req: NextRequest) {
       tone,
     });
 
-    // Save generation record if authenticated
-    if (user?.id) {
+    const effectiveUserId = user?.id || (await prisma.user.findFirst({ where: { email: "user@humanizeai.com" } }))?.id;
+
+    if (effectiveUserId) {
       try {
+        const createdDoc = await prisma.document.create({
+          data: {
+            userId: effectiveUserId,
+            title: `Humanized: ${text.slice(0, 30)}...`,
+            content: result.humanizedText,
+            toolType: "HUMANIZER",
+            wordCount: result.humanizedWordCount,
+            charCount: result.humanizedText.length,
+          },
+        });
+
         await prisma.generation.create({
           data: {
-            userId: user.id,
+            userId: effectiveUserId,
+            documentId: createdDoc.id,
             tool: "HUMANIZER",
             inputSnippet: text.slice(0, 150),
             outputText: result.humanizedText,

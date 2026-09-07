@@ -4,9 +4,17 @@ import { saveDocumentSchema } from "@/lib/validation/schemas";
 import { countWords, countCharacters } from "@/lib/utils";
 import prisma from "@/lib/db/client";
 
+async function getEffectiveUserId(user: any): Promise<string> {
+  if (user?.id) return user.id;
+  const demoUser = await prisma.user.findFirst({
+    where: { email: "user@humanizeai.com" },
+  });
+  return demoUser?.id || "user-default-id";
+}
+
 export async function GET(req: NextRequest) {
   const user = await getCurrentUser();
-  const userId = user?.id || "user-default-id";
+  const userId = await getEffectiveUserId(user);
 
   try {
     const { searchParams } = new URL(req.url);
@@ -41,7 +49,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
-  const userId = user?.id || "user-default-id";
+  const userId = await getEffectiveUserId(user);
 
   // Check if multipart form (file upload) or json (saving text)
   const contentType = req.headers.get("content-type") || "";

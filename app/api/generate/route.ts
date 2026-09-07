@@ -55,11 +55,26 @@ export async function POST(req: NextRequest) {
       creativity,
     });
 
-    if (user?.id) {
+    const effectiveUserId = user?.id || (await prisma.user.findFirst({ where: { email: "user@humanizeai.com" } }))?.id;
+
+    if (effectiveUserId) {
       try {
+        const docTitle = result.suggestedTitles?.[0] || `${contentType}: ${prompt.slice(0, 30)}`;
+        const createdDoc = await prisma.document.create({
+          data: {
+            userId: effectiveUserId,
+            title: docTitle,
+            content: result.content,
+            toolType: "WRITER",
+            wordCount: result.wordCount,
+            charCount: result.content.length,
+          },
+        });
+
         await prisma.generation.create({
           data: {
-            userId: user.id,
+            userId: effectiveUserId,
+            documentId: createdDoc.id,
             tool: "WRITER",
             inputSnippet: prompt.slice(0, 150),
             outputText: result.content,
@@ -73,7 +88,7 @@ export async function POST(req: NextRequest) {
           },
         });
       } catch (dbErr) {
-        console.warn("Could not save writer generation:", dbErr);
+        console.warn("Could not save writer document/generation:", dbErr);
       }
     }
 

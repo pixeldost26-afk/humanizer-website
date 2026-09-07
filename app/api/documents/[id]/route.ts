@@ -2,12 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
 import prisma from "@/lib/db/client";
 
+async function getEffectiveUserId(user: any): Promise<string> {
+  if (user?.id) return user.id;
+  const demoUser = await prisma.user.findFirst({
+    where: { email: "user@humanizeai.com" },
+  });
+  return demoUser?.id || "user-default-id";
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const user = await getCurrentUser();
-  const userId = user?.id || "user-default-id";
+  const userId = await getEffectiveUserId(user);
 
   try {
     const doc = await prisma.document.findFirst({
@@ -35,7 +43,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   const user = await getCurrentUser();
-  const userId = user?.id || "user-default-id";
+  const userId = await getEffectiveUserId(user);
 
   try {
     const body = await req.json();
@@ -70,7 +78,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const user = await getCurrentUser();
-  const userId = user?.id || "user-default-id";
+  const userId = await getEffectiveUserId(user);
 
   try {
     const deleted = await prisma.document.deleteMany({
