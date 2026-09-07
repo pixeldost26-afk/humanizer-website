@@ -86,12 +86,12 @@ export async function POST(req: NextRequest) {
       },
       error: null,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in /api/generate:", error);
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to generate content. Please try again.",
+        error: error?.message || "Failed to generate content. Please try again.",
       },
       { status: 500 }
     );

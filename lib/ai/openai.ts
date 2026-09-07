@@ -25,9 +25,27 @@ export class OpenAICompatibleProvider implements IAIEngine {
   private fallback: DemoMockProvider;
 
   constructor(apiKey: string, baseUrl?: string, model?: string) {
-    this.apiKey = apiKey;
-    this.baseUrl = baseUrl || "https://api.openai.com/v1";
-    this.model = model || "gpt-4o-mini";
+    this.apiKey = apiKey.trim();
+
+    const isGroqKey = this.apiKey.startsWith("gsk_");
+    const isLlamaModel = model?.toLowerCase().includes("llama");
+
+    if (baseUrl && baseUrl.trim() !== "") {
+      this.baseUrl = baseUrl.trim();
+    } else if (isGroqKey || isLlamaModel) {
+      this.baseUrl = "https://api.groq.com/openai/v1";
+    } else {
+      this.baseUrl = "https://api.openai.com/v1";
+    }
+
+    if (model && model.trim() !== "") {
+      this.model = model.trim();
+    } else if (isGroqKey) {
+      this.model = "llama-3.3-70b-versatile";
+    } else {
+      this.model = "gpt-4o-mini";
+    }
+
     this.fallback = new DemoMockProvider();
   }
 
@@ -143,7 +161,27 @@ Return a JSON object strictly matching this schema:
 
   async generateContent(prompt: string, options: WriteOptions): Promise<WriteResult> {
     try {
-      const systemPrompt = `You are a professional content creator and copywriter.
+      let systemPrompt = "";
+      if (options.contentType === "story") {
+        systemPrompt = `You are an expert creative fiction writer.
+Transform the user's idea or instructions into an engaging, original, human-sounding story.
+
+Writing requirements:
+- Create a clear beginning, middle, and ending.
+- Develop believable characters with distinct personalities.
+- Use natural dialogue that sounds like real people speaking.
+- Show emotions through actions, thoughts, expressions, and situations rather than simply stating them.
+- Use vivid but natural descriptions without overloading the story with adjectives.
+- Vary sentence length and paragraph structure.
+- Maintain a smooth, engaging narrative flow.
+- Avoid repetitive phrases, generic AI-style wording, and predictable transitions.
+- Keep the writing original and imaginative.
+- Match the requested tone (${options.tone}) and target audience (${options.audience}).
+- Preserve any important names, characters, events, or requirements provided by the user.
+- Target Length: ${options.length} (~${options.length === "short" ? "250" : options.length === "long" ? "800" : "450"} words).
+- Output only the finished story with a creative markdown title (e.g. # Title). Do not add unnecessary explanations before or after the story.`;
+      } else {
+        systemPrompt = `You are a professional content creator and copywriter.
 Generate high quality content for:
 Content Type: ${options.contentType}
 Tone: ${options.tone}
@@ -151,6 +189,7 @@ Audience: ${options.audience}
 Language: ${options.language}
 Target Length: ${options.length} (short: ~150 words, medium: ~350 words, long: ~700 words)
 Format output clearly with markdown headings where appropriate.`;
+      }
 
       const content = await this.callChat(systemPrompt, prompt);
       const wordCount = countWords(content);
@@ -160,7 +199,7 @@ Format output clearly with markdown headings where appropriate.`;
         wordCount,
         contentType: options.contentType,
         suggestedTitles: [
-          `Key Insights into ${prompt.slice(0, 30)}`,
+          `Key Insights: ${prompt.slice(0, 30)}`,
           `The Complete Guide: ${prompt.slice(0, 30)}`,
           `Practical Approaches to ${prompt.slice(0, 30)}`,
         ],
@@ -169,8 +208,8 @@ Format output clearly with markdown headings where appropriate.`;
         isDemoMode: false,
       };
     } catch (err) {
-      console.warn("Writer API failed, using fallback:", err);
-      return this.fallback.generateContent(prompt, options);
+      console.error("Writer API failed:", err);
+      throw err;
     }
   }
 
