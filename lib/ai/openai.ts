@@ -28,8 +28,8 @@ export class OpenAICompatibleProvider implements IAIEngine {
     this.apiKey = apiKey.trim();
 
     if (this.apiKey.startsWith("gsk_")) {
-      // Definitively a Groq API Key
-      this.baseUrl = baseUrl && baseUrl.trim() !== "" ? baseUrl.trim() : "https://api.groq.com/openai/v1";
+      // Definitively a Groq API Key -> MUST route to Groq API
+      this.baseUrl = baseUrl && baseUrl.includes("groq") ? baseUrl.trim() : "https://api.groq.com/openai/v1";
       let m = model && !model.toLowerCase().includes("gpt") ? model.trim() : "llama-3.1-8b-instant";
       if (m.includes("3.3-70b")) {
         m = "llama-3.1-8b-instant";
@@ -37,13 +37,14 @@ export class OpenAICompatibleProvider implements IAIEngine {
       this.model = m;
     } else if (this.apiKey.startsWith("sk-")) {
       // Definitively an OpenAI API Key
-      this.baseUrl = baseUrl && baseUrl.trim() !== "" && !baseUrl.includes("groq") ? baseUrl.trim() : "https://api.openai.com/v1";
-      // If user accidentally put a llama model with an OpenAI key, auto-correct to gpt-4o-mini
+      this.baseUrl = baseUrl && !baseUrl.includes("groq") ? baseUrl.trim() : "https://api.openai.com/v1";
       this.model = model && !model.toLowerCase().includes("llama") ? model.trim() : "gpt-4o-mini";
     } else {
       this.baseUrl = baseUrl && baseUrl.trim() !== "" ? baseUrl.trim() : "https://api.openai.com/v1";
       this.model = model && model.trim() !== "" ? model.trim() : "gpt-4o-mini";
     }
+
+    console.log(`[AI Engine] Initialized with key prefix '${this.apiKey.slice(0, 4)}...', routing to ${this.baseUrl} with model ${this.model}`);
 
     this.fallback = new DemoMockProvider();
   }
