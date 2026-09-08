@@ -104,15 +104,16 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <span className="hover:text-foreground transition-colors cursor-pointer">
+                <Link href="/privacy" className="hover:text-foreground transition-colors">
                   Privacy Policy
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="hover:text-foreground transition-colors cursor-pointer">
+                <Link href="/terms" className="hover:text-foreground transition-colors">
                   Terms of Service
-                </span>
+                </Link>
               </li>
+
               <li>
                 <span className="hover:text-foreground transition-colors cursor-pointer">
                   AI Detection Disclaimer

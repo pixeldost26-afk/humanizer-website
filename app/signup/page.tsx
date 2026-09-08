@@ -193,8 +193,20 @@ function SignupForm() {
             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
             <span>{isLoading ? "Creating account..." : "Sign Up"}</span>
           </button>
+
+          <p className="text-[11px] text-center text-muted-foreground pt-1 leading-relaxed">
+            By creating an account, you agree to our{" "}
+            <Link href="/terms" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+              Privacy Policy
+            </Link>.
+          </p>
         </form>
       </div>
+
 
       <p className="text-center text-xs text-muted-foreground">
         Already have an account?{" "}
