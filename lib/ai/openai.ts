@@ -23,6 +23,7 @@ export class OpenAICompatibleProvider implements IAIEngine {
   private baseUrl: string;
   private model: string;
   private isGroq: boolean;
+  private availableModels: string[] | null = null;
 
   constructor(apiKey: string, baseUrl?: string, model?: string) {
     this.apiKey = apiKey.trim();
@@ -61,21 +62,93 @@ export class OpenAICompatibleProvider implements IAIEngine {
     }
   }
 
+  private async fetchAvailableModels(): Promise<string[]> {
+    if (this.availableModels && this.availableModels.length > 0) {
+      return this.availableModels;
+    }
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      const res = await fetch(`${this.baseUrl}/models`, {
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        const ids = (data.data || [])
+          .map((m: any) => m.id)
+          .filter(
+            (id: any): id is string =>
+              typeof id === "string" &&
+              !id.includes("whisper") &&
+              !id.includes("guard") &&
+              !id.includes("embedding")
+          );
+        if (ids.length > 0) {
+          this.availableModels = ids;
+          console.log(`[AI Provider] Active models available for this API key:`, ids);
+          return ids;
+        }
+      }
+    } catch (err) {
+      console.warn(`[AI Provider] Could not fetch models from ${this.baseUrl}:`, err);
+    }
+    return [];
+  }
+
   private async callChat(
     systemPrompt: string,
     userPrompt: string,
     jsonMode = false,
     maxTokens = 1200
   ): Promise<string> {
-    const candidateModels: string[] = [this.model];
-    if (this.isGroq) {
-      const groqFallbacks = [
+    const discovered = await this.fetchAvailableModels();
+
+    let candidateModels: string[] = [];
+    if (discovered.length > 0) {
+      // 1. If this.model exists in discovered, prioritize it
+      if (discovered.includes(this.model)) {
+        candidateModels.push(this.model);
+      }
+      // 2. High-priority text generation models
+      const preferred = [
         "llama-3.3-70b-versatile",
+        "llama-3.3-70b-specdec",
         "llama-3.1-8b-instant",
+        "deepseek-r1-distill-llama-70b",
+        "qwen-2.5-32b",
+        "qwen-2.5-coder-32b",
+        "gpt-4o-mini",
+        "gpt-4o",
       ];
-      for (const m of groqFallbacks) {
+      for (const pref of preferred) {
+        if (discovered.includes(pref) && !candidateModels.includes(pref)) {
+          candidateModels.push(pref);
+        }
+      }
+      // 3. Any other discovered models
+      for (const m of discovered) {
         if (!candidateModels.includes(m)) {
           candidateModels.push(m);
+        }
+      }
+    }
+
+    if (candidateModels.length === 0) {
+      candidateModels = [this.model];
+      if (this.isGroq) {
+        const groqFallbacks = [
+          "llama-3.3-70b-versatile",
+          "llama-3.1-8b-instant",
+          "deepseek-r1-distill-llama-70b",
+        ];
+        for (const m of groqFallbacks) {
+          if (!candidateModels.includes(m)) {
+            candidateModels.push(m);
+          }
         }
       }
     }
