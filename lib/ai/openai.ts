@@ -34,15 +34,19 @@ export class OpenAICompatibleProvider implements IAIEngine {
 
       const rawModel = (model || "").trim();
       const decommissionedGroqModels: Record<string, string> = {
+        "gemma2-9b-it": "llama-3.3-70b-versatile",
+        "gemma-7b-it": "llama-3.3-70b-versatile",
         "llama3-70b-8192": "llama-3.3-70b-versatile",
         "llama3-8b-8192": "llama-3.1-8b-instant",
         "llama-3.1-70b-versatile": "llama-3.3-70b-versatile",
         "llama-3.1-8b-instant": "llama-3.1-8b-instant",
+        "llama-3.2-1b-preview": "llama-3.1-8b-instant",
+        "llama-3.2-3b-preview": "llama-3.1-8b-instant",
         "mixtral-8x7b-32768": "llama-3.3-70b-versatile",
       };
 
-      // If model is unset, starts with gpt- (OpenAI leftover), or is in the decommissioned map, use modern Groq flagship
-      if (!rawModel || rawModel.startsWith("gpt-") || decommissionedGroqModels[rawModel]) {
+      // If model is unset, starts with gpt- (OpenAI leftover), references gemma, or is in the decommissioned map, use modern Groq flagship
+      if (!rawModel || rawModel.startsWith("gpt-") || rawModel.includes("gemma") || decommissionedGroqModels[rawModel]) {
         this.model = decommissionedGroqModels[rawModel] || "llama-3.3-70b-versatile";
       } else {
         this.model = rawModel;
@@ -50,7 +54,7 @@ export class OpenAICompatibleProvider implements IAIEngine {
     } else if (this.apiKey.startsWith("sk-")) {
       // Standard OpenAI API Key
       this.baseUrl = baseUrl && !baseUrl.includes("groq") ? baseUrl.trim() : "https://api.openai.com/v1";
-      this.model = model && model.trim() !== "" ? model.trim() : "gpt-4o-mini";
+      this.model = model && !model.includes("llama") && !model.includes("mixtral") && !model.includes("gemma") && model.trim() !== "" ? model.trim() : "gpt-4o-mini";
     } else {
       this.baseUrl = baseUrl && baseUrl.trim() !== "" ? baseUrl.trim() : "https://api.openai.com/v1";
       this.model = model && model.trim() !== "" ? model.trim() : "gpt-4o-mini";
@@ -68,7 +72,6 @@ export class OpenAICompatibleProvider implements IAIEngine {
       const groqFallbacks = [
         "llama-3.3-70b-versatile",
         "llama-3.1-8b-instant",
-        "gemma2-9b-it",
       ];
       for (const m of groqFallbacks) {
         if (!candidateModels.includes(m)) {
