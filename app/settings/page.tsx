@@ -776,13 +776,14 @@ export default function SettingsPage() {
                         Need help or experiencing an issue? Our engineering support team is available 24/7.
                       </p>
                       <a
-                        href="mailto:support@humanizeai.com"
+                        href="mailto:pixeldost26@gmail.com"
                         className="inline-flex items-center gap-1 font-semibold text-indigo-600 dark:text-indigo-400 hover:underline pt-1"
                       >
-                        <span>support@humanizeai.com</span>
+                        <span>pixeldost26@gmail.com</span>
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
+
 
                     <div className="p-4 rounded-2xl border border-border bg-muted/20 space-y-2">
                       <div className="font-bold text-foreground">Platform Documentation & FAQ</div>
