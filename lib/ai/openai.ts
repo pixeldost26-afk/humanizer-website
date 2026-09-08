@@ -22,22 +22,25 @@ export class OpenAICompatibleProvider implements IAIEngine {
   private apiKey: string;
   private baseUrl: string;
   private model: string;
+  private isGroq: boolean;
 
   constructor(apiKey: string, baseUrl?: string, model?: string) {
     this.apiKey = apiKey.trim();
+    this.isGroq = this.apiKey.startsWith("gsk_") || Boolean(baseUrl && baseUrl.includes("groq"));
 
-    if (this.apiKey.startsWith("gsk_")) {
+    if (this.isGroq) {
       // Groq API Key -> Route to Groq OpenAI-compatible endpoint
       this.baseUrl = baseUrl && baseUrl.includes("groq") ? baseUrl.trim() : "https://api.groq.com/openai/v1";
-      let m = model && !model.toLowerCase().includes("gpt") ? model.trim() : "llama-3.1-8b-instant";
-      if (m.includes("3.3-70b")) {
-        m = "llama-3.1-8b-instant";
+      // If model is not set, or set to deprecated llama-3.1-8b-instant, default to active llama-3.3-70b-versatile
+      if (!model || model.trim() === "" || model.trim() === "llama-3.1-8b-instant") {
+        this.model = "llama-3.3-70b-versatile";
+      } else {
+        this.model = model.trim();
       }
-      this.model = m;
     } else if (this.apiKey.startsWith("sk-")) {
       // Standard OpenAI API Key
       this.baseUrl = baseUrl && !baseUrl.includes("groq") ? baseUrl.trim() : "https://api.openai.com/v1";
-      this.model = model && !model.toLowerCase().includes("llama") ? model.trim() : "gpt-4o-mini";
+      this.model = model && model.trim() !== "" ? model.trim() : "gpt-4o-mini";
     } else {
       this.baseUrl = baseUrl && baseUrl.trim() !== "" ? baseUrl.trim() : "https://api.openai.com/v1";
       this.model = model && model.trim() !== "" ? model.trim() : "gpt-4o-mini";
@@ -50,59 +53,110 @@ export class OpenAICompatibleProvider implements IAIEngine {
     jsonMode = false,
     maxTokens = 1200
   ): Promise<string> {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 45000); // 45s timeout
-
-    try {
-      const res = await fetch(`${this.baseUrl}/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: this.model,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          temperature: 0.7,
-          max_tokens: maxTokens,
-          ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeout);
-
-      if (!res.ok) {
-        const errText = await res.text();
-        if (res.status === 401) {
-          throw new Error("AI provider authentication failed. Please check your OPENAI_API_KEY.");
+    const candidateModels: string[] = [this.model];
+    if (this.isGroq) {
+      const groqFallbacks = [
+        "llama-3.3-70b-versatile",
+        "llama3-70b-8192",
+        "llama3-8b-8192",
+        "mixtral-8x7b-32768",
+        "gemma2-9b-it",
+      ];
+      for (const m of groqFallbacks) {
+        if (!candidateModels.includes(m)) {
+          candidateModels.push(m);
         }
-        if (res.status === 429) {
-          throw new Error("AI provider rate limit reached. Please wait a moment before trying again.");
-        }
-        if (res.status >= 500) {
-          throw new Error("AI provider service is temporarily unavailable. Please try again shortly.");
-        }
-        throw new Error(`AI Provider Error (${res.status}): ${errText}`);
       }
-
-      const data = await res.json();
-      const output = data.choices?.[0]?.message?.content;
-      if (!output) {
-        throw new Error("AI provider returned an empty response. Please try again.");
-      }
-      return output;
-    } catch (err: any) {
-      clearTimeout(timeout);
-      if (err.name === "AbortError") {
-        throw new Error("AI provider request timed out. Please try with shorter text.");
-      }
-      throw err;
     }
+
+    let lastError: Error | null = null;
+
+    for (const currentModel of candidateModels) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 45000); // 45s timeout
+
+      try {
+        const res = await fetch(`${this.baseUrl}/chat/completions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: currentModel,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
+            ],
+            temperature: 0.7,
+            max_tokens: maxTokens,
+            ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
+          }),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeout);
+
+        if (!res.ok) {
+          const errText = await res.text();
+          let parsedMessage = errText;
+          try {
+            const parsed = JSON.parse(errText);
+            if (parsed.error?.message) {
+              parsedMessage = parsed.error.message;
+            }
+          } catch {}
+
+          // If model was not found, attempt next candidate in candidateModels
+          if (
+            (res.status === 404 || errText.includes("model_not_found") || errText.includes("does not exist")) &&
+            candidateModels.indexOf(currentModel) < candidateModels.length - 1
+          ) {
+            console.warn(`[AI Provider] Model '${currentModel}' not available on ${this.baseUrl}. Falling back...`);
+            continue;
+          }
+
+          if (res.status === 401) {
+            throw new Error("AI provider authentication failed. Please check your API key in environment variables.");
+          }
+          if (res.status === 429) {
+            throw new Error("AI provider rate limit reached. Please wait a moment before trying again.");
+          }
+          if (res.status >= 500) {
+            throw new Error("AI provider service is temporarily unavailable. Please try again shortly.");
+          }
+          throw new Error(`AI Provider Error (${res.status}): ${parsedMessage}`);
+        }
+
+        const data = await res.json();
+        const output = data.choices?.[0]?.message?.content;
+        if (!output) {
+          throw new Error("AI provider returned an empty response. Please try again.");
+        }
+
+        // Remember working model for future calls
+        this.model = currentModel;
+        return output;
+      } catch (err: any) {
+        clearTimeout(timeout);
+        if (err.name === "AbortError") {
+          throw new Error("AI provider request timed out. Please try with shorter text.");
+        }
+        lastError = err;
+        // If not a model availability error, rethrow immediately
+        if (
+          !err.message?.includes("not exist") &&
+          !err.message?.includes("model_not_found") &&
+          !err.message?.includes("404")
+        ) {
+          throw err;
+        }
+      }
+    }
+
+    throw lastError || new Error("Failed to communicate with AI provider.");
   }
+
 
   async humanizeText(text: string, options: HumanizeOptions): Promise<HumanizeResult> {
     const systemPrompt = `You are an elite human editor and writing coach. Your goal is to rewrite the input text so it sounds completely authentic, engaging, and genuinely human-written, while strictly preserving the core meaning, direct quotes, and citations.
