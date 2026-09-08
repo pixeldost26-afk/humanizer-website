@@ -31,11 +31,21 @@ export class OpenAICompatibleProvider implements IAIEngine {
     if (this.isGroq) {
       // Groq API Key -> Route to Groq OpenAI-compatible endpoint
       this.baseUrl = baseUrl && baseUrl.includes("groq") ? baseUrl.trim() : "https://api.groq.com/openai/v1";
-      // If model is not set, or set to deprecated llama-3.1-8b-instant, default to active llama-3.3-70b-versatile
-      if (!model || model.trim() === "" || model.trim() === "llama-3.1-8b-instant") {
-        this.model = "llama-3.3-70b-versatile";
+
+      const rawModel = (model || "").trim();
+      const decommissionedGroqModels: Record<string, string> = {
+        "llama3-70b-8192": "llama-3.3-70b-versatile",
+        "llama3-8b-8192": "llama-3.1-8b-instant",
+        "llama-3.1-70b-versatile": "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant": "llama-3.1-8b-instant",
+        "mixtral-8x7b-32768": "llama-3.3-70b-versatile",
+      };
+
+      // If model is unset, starts with gpt- (OpenAI leftover), or is in the decommissioned map, use modern Groq flagship
+      if (!rawModel || rawModel.startsWith("gpt-") || decommissionedGroqModels[rawModel]) {
+        this.model = decommissionedGroqModels[rawModel] || "llama-3.3-70b-versatile";
       } else {
-        this.model = model.trim();
+        this.model = rawModel;
       }
     } else if (this.apiKey.startsWith("sk-")) {
       // Standard OpenAI API Key
@@ -57,9 +67,7 @@ export class OpenAICompatibleProvider implements IAIEngine {
     if (this.isGroq) {
       const groqFallbacks = [
         "llama-3.3-70b-versatile",
-        "llama3-70b-8192",
-        "llama3-8b-8192",
-        "mixtral-8x7b-32768",
+        "llama-3.1-8b-instant",
         "gemma2-9b-it",
       ];
       for (const m of groqFallbacks) {
@@ -107,12 +115,25 @@ export class OpenAICompatibleProvider implements IAIEngine {
             }
           } catch {}
 
-          // If model was not found, attempt next candidate in candidateModels
-          if (
-            (res.status === 404 || errText.includes("model_not_found") || errText.includes("does not exist")) &&
-            candidateModels.indexOf(currentModel) < candidateModels.length - 1
-          ) {
-            console.warn(`[AI Provider] Model '${currentModel}' not available on ${this.baseUrl}. Falling back...`);
+          const lowerText = (errText + " " + parsedMessage).toLowerCase();
+          const isModelUnavailable =
+            res.status === 404 ||
+            (res.status === 400 && (
+              lowerText.includes("decommissioned") ||
+              lowerText.includes("deprecated") ||
+              lowerText.includes("no longer supported") ||
+              lowerText.includes("model_not_found") ||
+              lowerText.includes("does not exist") ||
+              lowerText.includes("not supported")
+            )) ||
+            lowerText.includes("model_not_found") ||
+            lowerText.includes("does not exist");
+
+          if (isModelUnavailable && candidateModels.indexOf(currentModel) < candidateModels.length - 1) {
+            const nextCandidate = candidateModels[candidateModels.indexOf(currentModel) + 1];
+            console.warn(
+              `[AI Provider] Model '${currentModel}' is decommissioned or unavailable on ${this.baseUrl}. Automatically falling back to '${nextCandidate}'...`
+            );
             continue;
           }
 
@@ -143,14 +164,21 @@ export class OpenAICompatibleProvider implements IAIEngine {
           throw new Error("AI provider request timed out. Please try with shorter text.");
         }
         lastError = err;
-        // If not a model availability error, rethrow immediately
-        if (
-          !err.message?.includes("not exist") &&
-          !err.message?.includes("model_not_found") &&
-          !err.message?.includes("404")
-        ) {
+
+        const lowerMsg = (err.message || "").toLowerCase();
+        const isModelErr =
+          lowerMsg.includes("not exist") ||
+          lowerMsg.includes("model_not_found") ||
+          lowerMsg.includes("decommissioned") ||
+          lowerMsg.includes("deprecated") ||
+          lowerMsg.includes("no longer supported") ||
+          lowerMsg.includes("404");
+
+        // If not a model availability error and we have no other models to try, rethrow immediately
+        if (!isModelErr || candidateModels.indexOf(currentModel) >= candidateModels.length - 1) {
           throw err;
         }
+        console.warn(`[AI Provider] Encountered model error on '${currentModel}': ${err.message}. Trying next candidate model...`);
       }
     }
 
