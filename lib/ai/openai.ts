@@ -85,11 +85,13 @@ export class OpenAICompatibleProvider implements IAIEngine {
               typeof id === "string" &&
               !id.includes("whisper") &&
               !id.includes("guard") &&
-              !id.includes("embedding")
+              !id.includes("embedding") &&
+              !id.includes("orpheus") &&
+              !id.includes("safeguard")
           );
         if (ids.length > 0) {
           this.availableModels = ids;
-          console.log(`[AI Provider] Active models available for this API key:`, ids);
+          console.log(`[AI Provider] Active generation models available for this API key:`, ids);
           return ids;
         }
       }
@@ -115,12 +117,14 @@ export class OpenAICompatibleProvider implements IAIEngine {
       }
       // 2. High-priority text generation models
       const preferred = [
+        "openai/gpt-oss-120b",
+        "qwen/qwen3.8-27b",
+        "groq/compound",
+        "openai/gpt-oss-20b",
+        "qwen/qwen3.6-27b",
+        "groq/compound-mini",
         "llama-3.3-70b-versatile",
-        "llama-3.3-70b-specdec",
         "llama-3.1-8b-instant",
-        "deepseek-r1-distill-llama-70b",
-        "qwen-2.5-32b",
-        "qwen-2.5-coder-32b",
         "gpt-4o-mini",
         "gpt-4o",
       ];
