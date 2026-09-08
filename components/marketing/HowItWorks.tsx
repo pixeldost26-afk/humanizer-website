@@ -27,8 +27,8 @@ export function HowItWorks() {
       icon: Sparkles,
       title: "Get Clear, Human-Grade Prose",
       description:
-        "Our engine reorganizes robotic syntax, improves reading ease, and delivers polished writing with certified 0% AI detection.",
-      badge: "0% AI Detection",
+        "Our engine reorganizes robotic syntax, improves reading ease, and delivers polished writing engineered to bypass modern AI detection.",
+      badge: "AI Evasion Polish",
       gradient: "from-pink-600 to-indigo-600",
     },
   ];
@@ -41,7 +41,7 @@ export function HowItWorks() {
             Streamlined Process
           </span>
           <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
-            How HumanizeAI Works
+            How ManaHumanizeAI Works
           </h2>
           <p className="text-base text-muted-foreground leading-relaxed">
             Turn mechanical drafts into compelling, authentic writing in three intuitive steps.

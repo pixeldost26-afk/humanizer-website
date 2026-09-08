@@ -242,7 +242,7 @@ export function InteractiveCurtainComparison() {
       setCopied(true);
       toast({
         title: "Prose copied to clipboard",
-        description: "Verified 0% AI detection ready for submission or publishing.",
+        description: "Human-grade text ready for submission or publishing.",
         type: "success",
       });
       setTimeout(() => setCopied(false), 2000);
@@ -278,7 +278,7 @@ export function InteractiveCurtainComparison() {
           </h2>
 
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Slide the divider back and forth to inspect how rigid synthetic phrasing morphs into nuanced human cadence with 0% AI detection.
+            Slide the divider back and forth to inspect how rigid synthetic phrasing morphs into nuanced human cadence that bypasses AI detection.
           </p>
         </div>
 
@@ -673,9 +673,9 @@ export function InteractiveCurtainComparison() {
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
             </div>
             <div className="text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-              0% AI Score
+              Passed Audit
             </div>
-            <p className="text-[11px] text-muted-foreground">Verified clean on Turnitin, Grammarly & GPTZero.</p>
+            <p className="text-[11px] text-muted-foreground">Calibrated for Turnitin, Grammarly & GPTZero standards.</p>
           </div>
         </div>
       </div>

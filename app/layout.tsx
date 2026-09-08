@@ -17,21 +17,21 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "HumanizeAI — Make AI Writing Sound Naturally Yours",
+  title: "ManahumanizeAI — Transform AI Writing into Natural Human Prose",
   description:
     "All-in-one AI writing suite. Humanize AI text, detect AI content with sentence-level transparency, paraphrase, enhance grammar, and generate compelling articles.",
   keywords: [
+    "ManahumanizeAI",
     "AI Humanizer",
     "Natural Writing Assistant",
     "AI Detector",
-
     "Paraphraser",
     "Grammar Checker",
     "AI Writer",
     "Make AI Sound Human",
     "Text Rewriter",
   ],
-  authors: [{ name: "HumanizeAI Team" }],
+  authors: [{ name: "ManahumanizeAI Team" }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   manifest: "/manifest.json",
   icons: {
@@ -40,17 +40,17 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "HumanizeAI — Make AI Writing Sound Naturally Yours",
+    title: "ManahumanizeAI — Transform AI Writing into Natural Human Prose",
     description:
       "Transform rigid AI-generated text into clear, natural, engaging writing while preserving original meaning. Advanced AI detector and paraphrasing suite.",
     url: "/",
-    siteName: "HumanizeAI",
+    siteName: "ManahumanizeAI",
     images: [
       {
         url: "/og-preview.png",
         width: 1200,
         height: 630,
-        alt: "HumanizeAI Platform Preview",
+        alt: "ManahumanizeAI Platform Preview",
       },
     ],
     locale: "en_US",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "HumanizeAI — Make AI Writing Sound Naturally Yours",
+    title: "ManahumanizeAI — Transform AI Writing into Natural Human Prose",
     description: "Transform AI text into clear, human-quality writing. Advanced detection, paraphraser & grammar.",
   },
 };

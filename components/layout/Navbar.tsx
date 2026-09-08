@@ -95,7 +95,7 @@ export function Navbar() {
           </div>
           <div className="flex flex-col">
             <span className="text-lg font-bold tracking-tight text-foreground">
-              Humanize<span className="text-indigo-600 dark:text-indigo-400">AI</span>
+              ManaHumanize<span className="text-indigo-600 dark:text-indigo-400">AI</span>
             </span>
           </div>
         </Link>

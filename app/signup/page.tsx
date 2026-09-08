@@ -48,7 +48,7 @@ function SignupForm() {
 
       toast({
         title: "Account Created!",
-        description: "Welcome to HumanizeAI. Logging you in...",
+        description: "Welcome to ManaHumanizeAI. Logging you in...",
         type: "success",
       });
 
@@ -92,7 +92,7 @@ function SignupForm() {
             <Sparkles className="w-5 h-5" />
           </div>
           <span className="text-2xl font-extrabold tracking-tight">
-            Humanize<span className="text-indigo-600 dark:text-indigo-400">AI</span>
+            ManaHumanize<span className="text-indigo-600 dark:text-indigo-400">AI</span>
           </span>
         </Link>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">

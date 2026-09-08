@@ -53,7 +53,7 @@ export function AppShell({ children, title, description }: AppShellProps) {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push(`/signup?callbackUrl=${encodeURIComponent(pathname)}`);
+      router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
     }
   }, [status, pathname, router]);
 
@@ -82,7 +82,7 @@ export function AppShell({ children, title, description }: AppShellProps) {
             <Sparkles className="w-5 h-5" />
           </div>
           <p className="text-xs text-muted-foreground font-medium">
-            {status === "loading" ? "Loading studio..." : "Redirecting to Sign Up..."}
+            {status === "loading" ? "Loading studio..." : "Redirecting to Sign In..."}
           </p>
         </div>
       </div>
@@ -115,7 +115,7 @@ export function AppShell({ children, title, description }: AppShellProps) {
               <Sparkles className="w-4 h-4" />
             </div>
             <span className="font-bold tracking-tight text-base">
-              Humanize<span className="text-indigo-600 dark:text-indigo-400">AI</span>
+              ManaHumanize<span className="text-indigo-600 dark:text-indigo-400">AI</span>
             </span>
           </Link>
         </div>
@@ -253,7 +253,7 @@ export function AppShell({ children, title, description }: AppShellProps) {
 
             <div>
               <h1 className="text-sm sm:text-base font-bold text-foreground">
-                {title || "HumanizeAI Studio"}
+                {title || "ManaHumanizeAI Studio"}
               </h1>
               {description && (
                 <p className="text-xs text-muted-foreground hidden sm:block">{description}</p>

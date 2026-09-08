@@ -30,19 +30,19 @@ export default function HomePage() {
             {/* Release Pill Badge */}
             <div className="inline-flex items-center gap-2 badge-pro shadow-xs">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>HumanizeAI 2.0 • 0% AI Detection Guaranteed on Grammarly</span>
+              <span>ManaHumanizeAI • Advanced AI Evasion & Natural Cadence</span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground max-w-4xl mx-auto leading-[1.12]">
               Turn AI-Generated Text Into{" "}
-              <span className="text-gradient">100% Human Prose</span>
+              <span className="text-gradient">Natural Human Prose</span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-normal">
               Engineered for researchers, authors, and professionals. Transform robotic syntax into natural cadence
-              with verified 0% AI detection across all commercial scanners.
+              engineered to bypass leading AI detectors with authentic flow.
             </p>
 
             {/* Action Buttons */}
@@ -70,7 +70,7 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs text-muted-foreground pt-4">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span className="font-semibold text-foreground">0% AI on Grammarly & Turnitin</span>
+                <span className="font-semibold text-foreground">Bypasses Grammarly & Turnitin</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />

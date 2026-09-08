@@ -7,7 +7,7 @@ export default withAuth(
   },
   {
     pages: {
-      signIn: "/signup", // Direct unauthenticated visitors to sign up first
+      signIn: "/login",
     },
   }
 );

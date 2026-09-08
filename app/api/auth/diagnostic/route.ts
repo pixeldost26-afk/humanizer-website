@@ -17,14 +17,7 @@ export async function GET() {
     appUrl: appUrl || "NOT_SET",
     trustHostEnabled: Boolean(trustHost),
     googleClientIdConfigured: Boolean(googleClientId),
-    googleClientIdPreview: googleClientId
-      ? `${googleClientId.substring(0, 12)}...${googleClientId.substring(googleClientId.length - 12)}`
-      : "MISSING",
     googleClientSecretConfigured: Boolean(googleClientSecret),
-    googleClientSecretLength: googleClientSecret.length,
-    googleClientSecretPreview: googleClientSecret
-      ? `${googleClientSecret.substring(0, 4)}...${googleClientSecret.substring(googleClientSecret.length - 4)}`
-      : "MISSING",
     nextAuthSecretConfigured: Boolean(nextAuthSecret),
     lastOAuthError: getLastOAuthError(),
   });

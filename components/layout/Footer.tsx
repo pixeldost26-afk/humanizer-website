@@ -14,7 +14,7 @@ export function Footer() {
                 <Sparkles className="w-4 h-4" />
               </div>
               <span className="text-xl font-bold tracking-tight">
-                Humanize<span className="text-indigo-600 dark:text-indigo-400">AI</span>
+                ManaHumanize<span className="text-indigo-600 dark:text-indigo-400">AI</span>
               </span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">

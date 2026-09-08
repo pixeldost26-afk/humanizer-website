@@ -51,8 +51,8 @@ export function BentoFeatureGrid() {
 
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
                 Commercial AI models write with predictable sentence rhythms and Latinate buzzwords.
-                HumanizeAI dismantles robotic patterns, introduces human sentence burstiness, and
-                produces fluid writing that achieves a verified <strong>0% AI score on Grammarly</strong>.
+                ManaHumanizeAI dismantles robotic patterns, introduces human sentence burstiness, and
+                produces fluid writing engineered to <strong>bypass leading AI detectors seamlessly</strong>.
               </p>
 
               {/* Mode Pills */}
@@ -115,7 +115,7 @@ export function BentoFeatureGrid() {
               <div className="space-y-2 pt-2 text-xs">
                 <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-medium flex items-center justify-between">
                   <span>Humanized Output</span>
-                  <span className="font-bold">0% AI</span>
+                  <span className="font-bold">Human Verified (&lt;5% AI)</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-300 font-medium flex items-center justify-between">
                   <span>Raw Textbook AI</span>
