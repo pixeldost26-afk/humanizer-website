@@ -96,8 +96,9 @@ export function PersonaStudioSelector() {
             <span>Authorial Persona Studio</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-            Don't Just Bypass AI. Find Your Voice.
+            Elevate Your Writing. Find Your Authentic Voice.
           </h2>
+
           <p className="text-sm text-muted-foreground leading-relaxed">
             Standard humanizers only shuffle synonyms. HumanizeAI lets you adopt authentic, curated author personas engineered for your exact audience.
           </p>

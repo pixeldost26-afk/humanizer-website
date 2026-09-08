@@ -313,8 +313,9 @@ export function HeroInteractiveDemo() {
               <div className="pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
                 <span className="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                   <Check className="w-3.5 h-3.5 text-emerald-500" />
-                  Bypasses Grammarly & Turnitin
+                  Verified Natural Flow & Readability
                 </span>
+
                 <button
                   onClick={() => handleCopy(sample.humanText)}
                   className="inline-flex items-center gap-1 text-xs hover:text-foreground transition-colors"

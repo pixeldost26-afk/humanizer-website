@@ -22,8 +22,9 @@ export const metadata: Metadata = {
     "All-in-one AI writing suite. Humanize AI text, detect AI content with sentence-level transparency, paraphrase, enhance grammar, and generate compelling articles.",
   keywords: [
     "AI Humanizer",
-    "Bypass AI Detection",
+    "Natural Writing Assistant",
     "AI Detector",
+
     "Paraphraser",
     "Grammar Checker",
     "AI Writer",
