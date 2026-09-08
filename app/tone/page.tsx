@@ -44,9 +44,19 @@ export default function ToneRewriterPage() {
           description: `Adapted text into ${tone} voice.`,
           type: "success",
         });
+      } else {
+        toast({
+          title: "Tone Rewrite Notice",
+          description: data.error || "Unable to rewrite tone. Please try again.",
+          type: "error",
+        });
       }
-    } catch {
-      toast({ title: "Tone rewrite failed", type: "error" });
+    } catch (err: any) {
+      toast({
+        title: "Tone rewrite failed",
+        description: err?.message || "Network error. Please try again.",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }

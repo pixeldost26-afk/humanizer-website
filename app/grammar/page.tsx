@@ -34,9 +34,19 @@ export default function GrammarCheckerPage() {
           description: `Identified ${data.data.issuesCount} areas for improvement.`,
           type: "success",
         });
+      } else {
+        toast({
+          title: "Grammar Scan Notice",
+          description: data.error || "Unable to complete grammar scan. Please try again.",
+          type: "error",
+        });
       }
-    } catch {
-      toast({ title: "Grammar scan failed", type: "error" });
+    } catch (err: any) {
+      toast({
+        title: "Grammar scan failed",
+        description: err?.message || "Network error. Please try again.",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }

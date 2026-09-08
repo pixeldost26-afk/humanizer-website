@@ -17,6 +17,7 @@ import {
 } from "./provider";
 import { countWords, calculateReadingEase } from "../utils";
 import { NLPHumanizer } from "./nlp-humanizer";
+import { runHeuristicGrammarCheck } from "./grammar-rules";
 
 export class DemoMockProvider implements IAIEngine {
   name = "HumanizeAI Heuristic Engine";
@@ -366,75 +367,12 @@ export class DemoMockProvider implements IAIEngine {
   }
 
   async checkGrammar(text: string): Promise<GrammarResult> {
-    const rules: Array<{
-      pattern: RegExp;
-      replacement: string;
-      type: GrammarCorrection["type"];
-      explanation: string;
-    }> = [
-      {
-        pattern: /\bteh\b/gi,
-        replacement: "the",
-        type: "spelling",
-        explanation: 'Common typing error: replace "teh" with "the".',
-      },
-      {
-        pattern: /\brecieve\b/gi,
-        replacement: "receive",
-        type: "spelling",
-        explanation: 'Spelling rule: "i" before "e" except after "c".',
-      },
-      {
-        pattern: /\bthere is many\b/gi,
-        replacement: "there are many",
-        type: "grammar",
-        explanation: 'Subject-verb agreement: plural noun requires "there are".',
-      },
-      {
-        pattern: /\baffect the results\b/gi,
-        replacement: "influence the results",
-        type: "style",
-        explanation: "Word choice: consider a more descriptive verb.",
-      },
-      {
-        pattern: /\bvery unique\b/gi,
-        replacement: "unique",
-        type: "clarity",
-        explanation: '"Unique" is an absolute term and should not be modified by "very".',
-      },
-      {
-        pattern: /\btheir is\b/gi,
-        replacement: "there is",
-        type: "grammar",
-        explanation: 'Homophone error: use "there" to refer to existence or location.',
-      },
-      {
-        pattern: /\byour welcome\b/gi,
-        replacement: "you're welcome",
-        type: "grammar",
-        explanation: 'Contraction required: "you\'re" (you are), not possessive "your".',
-      },
-    ];
-
-    const corrections: GrammarCorrection[] = [];
+    const corrections = runHeuristicGrammarCheck(text);
     let corrected = text;
 
-    rules.forEach((rule, idx) => {
-      let match: RegExpExecArray | null;
-      const regex = new RegExp(rule.pattern.source, rule.pattern.flags + (rule.pattern.flags.includes("g") ? "" : "g"));
-      while ((match = regex.exec(text)) !== null) {
-        corrections.push({
-          id: `corr-${idx}-${match.index}`,
-          original: match[0],
-          replacement: rule.replacement,
-          start: match.index,
-          end: match.index + match[0].length,
-          type: rule.type,
-          explanation: rule.explanation,
-        });
-      }
-      corrected = corrected.replace(rule.pattern, rule.replacement);
-    });
+    for (const corr of corrections) {
+      corrected = corrected.replace(corr.original, corr.replacement);
+    }
 
     if (corrections.length === 0 && text.length > 30) {
       corrections.push({

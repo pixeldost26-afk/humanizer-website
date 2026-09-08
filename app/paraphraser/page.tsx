@@ -43,9 +43,19 @@ export default function ParaphraserPage() {
           description: `Rewritten in ${mode} style.`,
           type: "success",
         });
+      } else {
+        toast({
+          title: "Paraphrase Notice",
+          description: data.error || "Unable to paraphrase text. Please try again.",
+          type: "error",
+        });
       }
-    } catch {
-      toast({ title: "Paraphrase Failed", type: "error" });
+    } catch (err: any) {
+      toast({
+        title: "Paraphrase Failed",
+        description: err?.message || "Network error. Please try again.",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }

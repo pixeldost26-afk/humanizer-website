@@ -8,6 +8,7 @@ import {
   ParaphraseOptions,
   ParaphraseResult,
   GrammarResult,
+  GrammarCorrection,
   SummarizeOptions,
   SummarizeResult,
   ToneOptions,
@@ -15,6 +16,58 @@ import {
 } from "./provider";
 import { countWords, calculateReadingEase } from "../utils";
 import { LinguisticAnalysisDetector } from "./linguistic-detector";
+import { runHeuristicGrammarCheck } from "./grammar-rules";
+
+export function cleanAndParseJson<T>(raw: string, fallback: T): T {
+  if (!raw || typeof raw !== "string") return fallback;
+
+  // 1. Direct parse
+  try {
+    return JSON.parse(raw);
+  } catch {}
+
+  // 2. Strip thinking/reasoning tags (e.g. <think>...</think>)
+  let cleaned = raw.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+
+  // 3. Strip Markdown code fences (```json ... ``` or ``` ...)
+  cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+
+  try {
+    return JSON.parse(cleaned);
+  } catch {}
+
+  // 4. Extract first balanced JSON object from { to }
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    const jsonSubstring = cleaned.slice(firstBrace, lastBrace + 1);
+    try {
+      return JSON.parse(jsonSubstring);
+    } catch {
+      try {
+        const sanitized = jsonSubstring.replace(/,\s*([}\]])/g, "$1");
+        return JSON.parse(sanitized);
+      } catch {}
+    }
+  }
+
+  // 5. Extract JSON array from [ to ]
+  const firstBracket = cleaned.indexOf("[");
+  const lastBracket = cleaned.lastIndexOf("]");
+  if (firstBracket !== -1 && lastBracket > firstBracket) {
+    const jsonSubstring = cleaned.slice(firstBracket, lastBracket + 1);
+    try {
+      return JSON.parse(jsonSubstring);
+    } catch {
+      try {
+        const sanitized = jsonSubstring.replace(/,\s*([}\]])/g, "$1");
+        return JSON.parse(sanitized);
+      } catch {}
+    }
+  }
+
+  return fallback;
+}
 
 export class OpenAICompatibleProvider implements IAIEngine {
   name = "OpenAI Compatible Engine";
@@ -196,6 +249,53 @@ export class OpenAICompatibleProvider implements IAIEngine {
           } catch {}
 
           const lowerText = (errText + " " + parsedMessage).toLowerCase();
+
+          // If JSON mode was rejected because the model doesn't support json_object or failed json validation on Groq,
+          // retry immediately with raw prompt instruction since cleanAndParseJson parses unstructured text
+          if (
+            jsonMode &&
+            res.status === 400 &&
+            (lowerText.includes("response_format") ||
+              lowerText.includes("json_object") ||
+              lowerText.includes("json_validate_failed") ||
+              lowerText.includes("schema"))
+          ) {
+            console.warn(
+              `[AI Provider] Model '${currentModel}' rejected response_format: ${parsedMessage}. Retrying in raw JSON prompt mode...`
+            );
+            try {
+              const retryRes = await fetch(`${this.baseUrl}/chat/completions`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${this.apiKey}`,
+                },
+                body: JSON.stringify({
+                  model: currentModel,
+                  messages: [
+                    {
+                      role: "system",
+                      content: `${systemPrompt}\n\nIMPORTANT: Respond with ONLY a raw JSON object. Do NOT wrap in markdown code blocks or add introductory text.`,
+                    },
+                    { role: "user", content: userPrompt },
+                  ],
+                  temperature: 0.5,
+                  max_tokens: maxTokens,
+                }),
+              });
+              if (retryRes.ok) {
+                const retryData = await retryRes.json();
+                const retryOutput = retryData.choices?.[0]?.message?.content;
+                if (retryOutput) {
+                  this.model = currentModel;
+                  return retryOutput;
+                }
+              }
+            } catch (retryErr: any) {
+              console.warn(`[AI Provider] Retry without response_format failed:`, retryErr.message);
+            }
+          }
+
           const isModelUnavailable =
             res.status === 404 ||
             (res.status === 400 && (
@@ -204,7 +304,7 @@ export class OpenAICompatibleProvider implements IAIEngine {
               lowerText.includes("no longer supported") ||
               lowerText.includes("model_not_found") ||
               lowerText.includes("does not exist") ||
-              lowerText.includes("not supported")
+              (lowerText.includes("not supported") && !lowerText.includes("response_format"))
             )) ||
             lowerText.includes("model_not_found") ||
             lowerText.includes("does not exist");
@@ -452,34 +552,101 @@ Format output clearly with markdown headings.`;
   }
 
   async checkGrammar(text: string): Promise<GrammarResult> {
-    const systemPrompt = `Analyze the given text for grammatical errors, spelling typos, punctuation flaws, and clarity improvements.
-Return JSON strictly in this format:
+    const systemPrompt = `You are an expert grammar and style editor.
+Analyze the user's text for grammatical errors, spelling mistakes, punctuation flaws, and clarity improvements.
+Respond ONLY with a valid JSON object matching this schema:
 {
-  "correctedText": string,
-  "issuesCount": number,
+  "correctedText": "full corrected text with all fixes applied",
+  "issuesCount": 3,
   "corrections": [
     {
-      "id": string,
-      "original": string,
-      "replacement": string,
-      "start": number,
-      "end": number,
-      "type": "spelling" | "grammar" | "punctuation" | "style" | "clarity",
-      "explanation": string
+      "id": "corr-1",
+      "original": "error phrase from text",
+      "replacement": "suggested correction",
+      "start": 0,
+      "end": 3,
+      "type": "spelling",
+      "explanation": "concise explanation of why this was corrected"
     }
   ],
-  "readabilityImprovement": string
-}`;
+  "readabilityImprovement": "+15% enhanced clarity"
+}
+Allowed types for each correction: "spelling", "grammar", "punctuation", "style", "clarity".
+Output ONLY raw JSON. No markdown code blocks, no backticks, no comments.`;
 
-    const jsonStr = await this.callChat(systemPrompt, text, true);
-    const parsed = JSON.parse(jsonStr);
+    let parsed: any = null;
+    try {
+      const jsonStr = await this.callChat(systemPrompt, text, true);
+      parsed = cleanAndParseJson(jsonStr, null);
+    } catch (err: any) {
+      console.warn("[AI Provider Grammar Warning]:", err.message);
+    }
+
+    const heuristicCorrections = runHeuristicGrammarCheck(text);
+    let corrections: GrammarCorrection[] = [];
+
+    if (parsed && Array.isArray(parsed.corrections) && parsed.corrections.length > 0) {
+      corrections = parsed.corrections
+        .filter(
+          (c: any) =>
+            c &&
+            typeof c === "object" &&
+            typeof c.original === "string" &&
+            typeof c.replacement === "string" &&
+            c.original.trim() !== ""
+        )
+        .map((c: any, idx: number) => {
+          const typeStr = String(c.type || "grammar").toLowerCase();
+          const validTypes = ["spelling", "grammar", "punctuation", "style", "clarity"];
+          const type = validTypes.includes(typeStr) ? (typeStr as GrammarCorrection["type"]) : "grammar";
+
+          let start = typeof c.start === "number" ? c.start : text.indexOf(c.original);
+          if (start < 0) start = 0;
+          let end = typeof c.end === "number" ? c.end : start + c.original.length;
+
+          return {
+            id: String(c.id || `corr-${idx + 1}`),
+            original: String(c.original),
+            replacement: String(c.replacement),
+            start,
+            end,
+            type,
+            explanation: String(c.explanation || `Suggested replacement: "${c.replacement}"`),
+          };
+        });
+    }
+
+    // Merge any heuristic corrections missed by the AI
+    for (const hCorr of heuristicCorrections) {
+      const alreadyCovered = corrections.some(
+        (c) =>
+          c.original.toLowerCase() === hCorr.original.toLowerCase() ||
+          (hCorr.start >= c.start && hCorr.end <= c.end)
+      );
+      if (!alreadyCovered) {
+        corrections.push(hCorr);
+      }
+    }
+
+    let correctedText = (parsed && typeof parsed.correctedText === "string" && parsed.correctedText.trim()) || "";
+    if (!correctedText) {
+      correctedText = text;
+      for (const corr of corrections) {
+        correctedText = correctedText.replace(corr.original, corr.replacement);
+      }
+    }
+
+    const issuesCount = corrections.length;
+    const readabilityImprovement =
+      (parsed && typeof parsed.readabilityImprovement === "string" && parsed.readabilityImprovement) ||
+      (issuesCount > 0 ? `+${Math.min(30, 8 + issuesCount * 4)}% enhanced clarity` : "Writing is clear and well-structured");
 
     return {
       originalText: text,
-      correctedText: parsed.correctedText || text,
-      issuesCount: parsed.issuesCount || parsed.corrections?.length || 0,
-      corrections: parsed.corrections || [],
-      readabilityImprovement: parsed.readabilityImprovement || "+15% enhanced clarity",
+      correctedText,
+      issuesCount,
+      corrections,
+      readabilityImprovement,
       providerUsed: `${this.name} (${this.model})`,
       isDemoMode: false,
     };
@@ -487,27 +654,53 @@ Return JSON strictly in this format:
 
   async summarizeText(text: string, options: SummarizeOptions): Promise<SummarizeResult> {
     const systemPrompt = `Summarize the input text. Mode: ${options.mode} (short, medium, detailed, bullets).
-Return JSON in this format:
+Return JSON strictly in this format:
 {
   "summary": string,
   "keyTakeaways": string[]
-}`;
+}
+Output ONLY the raw JSON object. Do not include markdown code block wrappers or extra text.`;
 
-    const jsonStr = await this.callChat(systemPrompt, text, true);
-    const parsed = JSON.parse(jsonStr);
+    let parsed: any = null;
+    try {
+      const jsonStr = await this.callChat(systemPrompt, text, true);
+      parsed = cleanAndParseJson(jsonStr, null);
+    } catch (err: any) {
+      console.warn("[AI Provider Summarize Warning]:", err.message);
+    }
+
     const originalWordCount = countWords(text);
-    const summaryWordCount = countWords(parsed.summary || "");
+    let summary = (parsed && typeof parsed.summary === "string" && parsed.summary.trim()) || "";
+    let keyTakeaways: string[] = Array.isArray(parsed?.keyTakeaways)
+      ? (parsed.keyTakeaways as any[]).map((k: any) => String(k))
+      : [];
+
+    if (!summary) {
+      const sentences = text.split(/(?<=[.?!])\s+/).filter((s) => s.trim().length > 0);
+      if (options.mode === "bullets") {
+        keyTakeaways = sentences.slice(0, 4).map((s: string) => s.trim().replace(/^[-*•]\s*/, ""));
+        summary = keyTakeaways.map((t: string) => `• ${t}`).join("\n");
+      } else if (options.mode === "short") {
+        summary = sentences.slice(0, Math.max(1, Math.floor(sentences.length * 0.3))).join(" ");
+        keyTakeaways = [sentences[0] || text.slice(0, 100)];
+      } else {
+        summary = sentences.slice(0, Math.max(1, Math.floor(sentences.length * 0.5))).join(" ");
+        keyTakeaways = sentences.slice(0, 2);
+      }
+    }
+
+    const summaryWordCount = countWords(summary);
     const compressionRatio = Math.max(
       5,
       Math.round(((originalWordCount - summaryWordCount) / Math.max(1, originalWordCount)) * 100)
     );
 
     return {
-      summary: parsed.summary || text,
+      summary,
       originalWordCount,
       summaryWordCount,
       compressionRatio,
-      keyTakeaways: parsed.keyTakeaways || [],
+      keyTakeaways,
       providerUsed: `${this.name} (${this.model})`,
       isDemoMode: false,
     };
@@ -527,3 +720,4 @@ Return JSON in this format:
     };
   }
 }
+

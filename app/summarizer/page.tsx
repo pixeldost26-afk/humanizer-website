@@ -41,9 +41,19 @@ export default function SummarizerPage() {
           description: `Condensed text by ${data.data.compressionRatio}%.`,
           type: "success",
         });
+      } else {
+        toast({
+          title: "Summarization Notice",
+          description: data.error || "Unable to summarize text. Please try again.",
+          type: "error",
+        });
       }
-    } catch {
-      toast({ title: "Summarization Failed", type: "error" });
+    } catch (err: any) {
+      toast({
+        title: "Summarization Failed",
+        description: err?.message || "Network error. Please try again.",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }
