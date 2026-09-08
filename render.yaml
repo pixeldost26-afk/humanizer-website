@@ -9,7 +9,7 @@ databases:
 
 services:
   - type: web
-    name: humanize-ai
+    name: MANAHUMANIZE-AI
     runtime: node
     plan: free
     buildCommand: npm install && npm run build
