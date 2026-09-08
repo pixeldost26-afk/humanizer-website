@@ -30,7 +30,7 @@ export default function HomePage() {
             {/* Release Pill Badge */}
             <div className="inline-flex items-center gap-2 badge-pro shadow-xs">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>ManaHumanizeAI • Advanced AI Evasion & Natural Cadence</span>
+              <span>ManaHumanizeAI • Advanced Writing Transformation & Natural Cadence</span>
             </div>
 
             {/* Main Headline */}
@@ -42,7 +42,7 @@ export default function HomePage() {
             {/* Subtitle */}
             <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-normal">
               Engineered for researchers, authors, and professionals. Transform robotic syntax into natural cadence
-              engineered to bypass leading AI detectors with authentic flow.
+              designed to reduce formulaic AI patterns with authentic human flow.
             </p>
 
             {/* Action Buttons */}
@@ -70,7 +70,7 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs text-muted-foreground pt-4">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span className="font-semibold text-foreground">Bypasses Grammarly & Turnitin</span>
+                <span className="font-semibold text-foreground">Engineered for Natural Human Cadence</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />

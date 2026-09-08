@@ -4,8 +4,8 @@ import { Shield, ArrowLeft, Lock, Eye, Database, Server, RefreshCw } from "lucid
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — HumanizeAI",
-  description: "Learn how HumanizeAI collects, protects, and handles your data and writing content.",
+  title: "Privacy Policy — ManaHumanizeAI",
+  description: "Learn how ManaHumanizeAI collects, protects, and handles your data and writing content.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -29,7 +29,7 @@ export default function PrivacyPolicyPage() {
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Privacy Policy</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Last Updated: {lastUpdated} • HumanizeAI ("we", "our", or "us")
+            Last Updated: {lastUpdated} • ManaHumanizeAI ("we", "our", or "us")
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export default function PrivacyPolicyPage() {
               1. Information We Collect
             </h2>
             <p>
-              When you use HumanizeAI, we collect minimal information necessary to deliver and improve our writing assistant tools:
+              When you use ManaHumanizeAI, we collect minimal information necessary to deliver and improve our writing assistant tools:
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>

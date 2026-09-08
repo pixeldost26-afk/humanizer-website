@@ -1,10 +1,21 @@
 "use client";
 
 import React, { useState } from "react";
-import { ShieldCheck, CheckCircle2, AlertTriangle, ArrowRight, Sparkles, Cpu } from "lucide-react";
+import { ShieldCheck, CheckCircle2, AlertTriangle, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 
-const BENCHMARKS = [
+interface BenchmarkItem {
+  id: string;
+  title: string;
+  rawAI: string;
+  rawScore: number;
+  humanized: string;
+  cadenceStatus: string;
+  burstinessStatus: string;
+  patternStatus: string;
+}
+
+const BENCHMARKS: BenchmarkItem[] = [
   {
     id: "tech",
     title: "Computer Science & Tech",
@@ -13,10 +24,9 @@ const BENCHMARKS = [
     rawScore: 88,
     humanized:
       "Primary memory (mainly RAM) works as high-speed workspace for running software. Secondary storage, like SSDs and hard drives, keeps files intact even after shutting down.",
-    humanScore: 0,
-    grammarlyStatus: "0% AI Written",
-    turnitinStatus: "0% AI Detection",
-    gptZeroStatus: "100% Human",
+    cadenceStatus: "Natural Cadence",
+    burstinessStatus: "High Variation",
+    patternStatus: "Formulaic Patterns Reduced",
   },
   {
     id: "academic",
@@ -26,10 +36,9 @@ const BENCHMARKS = [
     rawScore: 94,
     humanized:
       "Scholarly research highlights how complex economic gaps can be—showing that distinct institutional factors directly shape lasting financial stability.",
-    humanScore: 0,
-    grammarlyStatus: "0% AI Written",
-    turnitinStatus: "0% AI Detection",
-    gptZeroStatus: "100% Human",
+    cadenceStatus: "Scholarly Flow",
+    burstinessStatus: "Varied Syntax",
+    patternStatus: "Clichés Neutralized",
   },
   {
     id: "marketing",
@@ -39,10 +48,9 @@ const BENCHMARKS = [
     rawScore: 82,
     humanized:
       "Using this modern software helps your team ship faster without the headaches. It's a proven way to eliminate bottlenecks and get real work done.",
-    humanScore: 0,
-    grammarlyStatus: "0% AI Written",
-    turnitinStatus: "0% AI Detection",
-    gptZeroStatus: "100% Human",
+    cadenceStatus: "Engaging & Direct",
+    burstinessStatus: "Punchy Rhythm",
+    patternStatus: "Hyperbole Purged",
   },
   {
     id: "email",
@@ -52,10 +60,9 @@ const BENCHMARKS = [
     rawScore: 79,
     humanized:
       "To wrap this up quickly, please submit your team requests directly through the company portal by end of day.",
-    humanScore: 0,
-    grammarlyStatus: "0% AI Written",
-    turnitinStatus: "0% AI Detection",
-    gptZeroStatus: "100% Human",
+    cadenceStatus: "Executive Clarity",
+    burstinessStatus: "Concise Phrasing",
+    patternStatus: "Jargon Eliminated",
   },
 ];
 
@@ -70,14 +77,14 @@ export function DetectorBenchmark() {
         <div className="text-center max-w-3xl mx-auto space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span>Proven 0% Detection Across Commercial Scanners</span>
+            <span>Benchmarked Against Formulaic AI Patterns</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
-            How HumanizeAI Beats Every Major AI Detector
+            How ManaHumanizeAI Transforms Formulaic Writing
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Commercial detectors look for formulaic transitions, low burstiness, and rigid sentence structures.
-            See how our dynamic cadence engine turns flagged text into certified 0% human prose.
+            Formulaic AI text typically exhibits repetitive syntax, uniform sentence lengths, and overused transitions.
+            See how our dynamic cadence engine transforms predictable machine text into varied, natural human prose.
           </p>
         </div>
 
@@ -108,20 +115,20 @@ export function DetectorBenchmark() {
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
                     <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
-                    Before: Raw AI Output
+                    Before: Formulaic AI Output
                   </span>
                   <span className="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-black border border-rose-500/20">
-                    {active.rawScore}% AI Detected
+                    {active.rawScore}% Pattern Likelihood
                   </span>
                 </div>
                 <blockquote className="text-sm text-foreground/80 leading-relaxed italic bg-background/50 p-4 rounded-xl border border-rose-500/10">
-                  "{active.rawAI}"
+                  &ldquo;{active.rawAI}&rdquo;
                 </blockquote>
               </div>
               <div className="pt-3 border-t border-rose-500/15 flex items-center justify-between text-xs text-rose-600/80 dark:text-rose-400/80">
                 <span className="flex items-center gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5" />
-                  Flagged by Grammarly & Turnitin
+                  Predictable Transitional Phrasing
                 </span>
                 <span className="font-semibold">Monotonous Rhythm</span>
               </div>
@@ -133,59 +140,59 @@ export function DetectorBenchmark() {
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                     <Sparkles className="w-4 h-4 text-emerald-500" />
-                    After: HumanizeAI Output
+                    After: ManaHumanizeAI Output
                   </span>
                   <span className="px-3 py-1 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-black border border-emerald-500/30 shadow-xs">
-                    0% AI • 100% Human
+                    Natural Cadence • Varied Flow
                   </span>
                 </div>
                 <blockquote className="text-sm text-foreground font-medium leading-relaxed bg-background/60 p-4 rounded-xl border border-emerald-500/20">
-                  "{active.humanized}"
+                  &ldquo;{active.humanized}&rdquo;
                 </blockquote>
               </div>
               <div className="pt-3 border-t border-emerald-500/20 flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                  Clean Pass on All Detectors
+                  Optimized Sentence Variation
                 </span>
-                <span className="font-bold">Natural Human Flow</span>
+                <span className="font-bold">Organic Human Flow</span>
               </div>
             </div>
           </div>
 
-          {/* Detector Verification Badges */}
+          {/* Linguistic Quality Dimensions */}
           <div className="pt-4 border-t border-border/60">
             <div className="text-center text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
-              Verified Benchmark Scores Across Major AI Detection Suites
+              Linguistic Quality Dimensions Across Writing Samples
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-2xl bg-muted/40 border border-border text-center space-y-1">
-                <div className="text-xs text-muted-foreground font-semibold">Grammarly AI</div>
+                <div className="text-xs text-muted-foreground font-semibold">Sentence Burstiness</div>
                 <div className="text-base font-black text-emerald-600 dark:text-emerald-400">
-                  0% AI Written
+                  High Variation
                 </div>
-                <div className="text-[10px] text-emerald-600/80 font-bold uppercase">Passed</div>
+                <div className="text-[10px] text-emerald-600/80 font-bold uppercase">Dynamic Lengths</div>
               </div>
               <div className="p-3.5 rounded-2xl bg-muted/40 border border-border text-center space-y-1">
-                <div className="text-xs text-muted-foreground font-semibold">Turnitin</div>
+                <div className="text-xs text-muted-foreground font-semibold">Lexical Perplexity</div>
                 <div className="text-base font-black text-emerald-600 dark:text-emerald-400">
-                  0% AI Score
+                  Natural Cadence
                 </div>
-                <div className="text-[10px] text-emerald-600/80 font-bold uppercase">Passed</div>
+                <div className="text-[10px] text-emerald-600/80 font-bold uppercase">Rich Vocabulary</div>
               </div>
               <div className="p-3.5 rounded-2xl bg-muted/40 border border-border text-center space-y-1">
-                <div className="text-xs text-muted-foreground font-semibold">GPTZero</div>
+                <div className="text-xs text-muted-foreground font-semibold">Transition Flow</div>
                 <div className="text-base font-black text-emerald-600 dark:text-emerald-400">
-                  100% Human
+                  Contextual Flow
                 </div>
-                <div className="text-[10px] text-emerald-600/80 font-bold uppercase">Passed</div>
+                <div className="text-[10px] text-emerald-600/80 font-bold uppercase">Zero Machine Tropes</div>
               </div>
               <div className="p-3.5 rounded-2xl bg-muted/40 border border-border text-center space-y-1">
-                <div className="text-xs text-muted-foreground font-semibold">CopyLeaks</div>
+                <div className="text-xs text-muted-foreground font-semibold">Structure Balance</div>
                 <div className="text-base font-black text-emerald-600 dark:text-emerald-400">
-                  Human Text
+                  Polished Rhythm
                 </div>
-                <div className="text-[10px] text-emerald-600/80 font-bold uppercase">Passed</div>
+                <div className="text-[10px] text-emerald-600/80 font-bold uppercase">Authentic Cadence</div>
               </div>
             </div>
           </div>

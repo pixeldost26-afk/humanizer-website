@@ -234,7 +234,7 @@ export default function HumanizerPage() {
         <div className="flex items-start gap-3 p-4 rounded-2xl bg-muted/30 border border-border/80 text-xs text-muted-foreground">
           <ShieldCheck className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
           <p className="leading-relaxed">
-            <strong>Ethical Positioning:</strong> HumanizeAI focuses on improving naturalness,
+            <strong>Ethical Positioning:</strong> ManaHumanizeAI focuses on improving naturalness,
             fluency, syntactic rhythm, and readability. We do not claim or guarantee that text will
             bypass every third-party AI detector, as detector heuristics are probabilistic and prone
             to false readings.

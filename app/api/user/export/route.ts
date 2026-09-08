@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
 
     const exportPayload = {
       exportedAt: new Date().toISOString(),
-      platform: "HumanizeAI",
+      platform: "ManaHumanizeAI",
       account: userData,
     };
 
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Content-Disposition": `attachment; filename="humanizeai-data-${user.id.slice(0, 8)}.json"`,
+        "Content-Disposition": `attachment; filename="manahumanizeai-data-${user.id.slice(0, 8)}.json"`,
       },
     });
   } catch (err: any) {

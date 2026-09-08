@@ -9,12 +9,12 @@ export function FAQSection() {
 
   const faqs = [
     {
-      q: "What is HumanizeAI and how does it work?",
-      a: "HumanizeAI is an all-in-one platform engineered to transform rigid, robotic AI text into natural, engaging, human-crafted prose. It refactors predictable sentence lengths, strips out overused transition clichés (like 'furthermore' and 'testament to'), and enhances vocabulary cadence while preserving 100% of your facts.",
+      q: "What is ManaHumanizeAI and how does it work?",
+      a: "ManaHumanizeAI is an all-in-one platform engineered to transform rigid, robotic AI text into natural, engaging, human-crafted prose. It refactors predictable sentence lengths, strips out overused transition clichés (like 'furthermore' and 'testament to'), and enhances vocabulary cadence while preserving 100% of your facts.",
     },
     {
-      q: "Does HumanizeAI guarantee 100% undetectable AI text?",
-      a: "No ethical tool can guarantee a 100% bypass because AI detectors are statistical algorithms with changing heuristics that often produce false positives and false negatives. HumanizeAI focuses on genuine literary quality, burstiness, natural rhythm, and readability improvements rather than deceptive promises.",
+      q: "Does ManaHumanizeAI guarantee 100% undetectable AI text?",
+      a: "No ethical tool can guarantee a 100% bypass because AI detectors are statistical algorithms with changing heuristics that often produce false positives and false negatives. ManaHumanizeAI focuses on genuine literary quality, burstiness, natural rhythm, and readability improvements rather than deceptive promises.",
     },
     {
       q: "How does the AI Detector analyze content?",
@@ -29,8 +29,8 @@ export function FAQSection() {
       a: "Yes. Your text is processed securely with strict encryption standards. We do not use your proprietary documents or drafts to train public AI models. Your saved history is strictly accessible only to your authenticated account.",
     },
     {
-      q: "Is HumanizeAI completely free to use with no billing plans?",
-      a: "Yes! HumanizeAI is 100% free to use with unlimited words. All features — including the AI Humanizer, AI Detector, AI Writer, Paraphraser, and Grammar Checker — are available without any credit cards, subscriptions, or paywalls.",
+      q: "Is ManaHumanizeAI completely free to use with no billing plans?",
+      a: "Yes! ManaHumanizeAI is 100% free to use with unlimited words. All features — including the AI Humanizer, AI Detector, AI Writer, Paraphraser, and Grammar Checker — are available without any credit cards, subscriptions, or paywalls.",
     },
   ];
 

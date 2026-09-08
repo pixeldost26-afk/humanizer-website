@@ -32,7 +32,7 @@ export function SupportedLanguages() {
           Flawless Natural Phrasing in 50+ Languages
         </h2>
         <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-          HumanizeAI respects cultural idioms, localized grammatical cadences, and nuanced
+          ManaHumanizeAI respects cultural idioms, localized grammatical cadences, and nuanced
           vocabulary across global linguistic variations.
         </p>
 

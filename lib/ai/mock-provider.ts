@@ -20,7 +20,7 @@ import { NLPHumanizer } from "./nlp-humanizer";
 import { runHeuristicGrammarCheck } from "./grammar-rules";
 
 export class DemoMockProvider implements IAIEngine {
-  name = "HumanizeAI Heuristic Engine";
+  name = "ManaHumanizeAI Heuristic Engine";
   isDemo = true;
 
   async humanizeText(text: string, options: HumanizeOptions): Promise<HumanizeResult> {

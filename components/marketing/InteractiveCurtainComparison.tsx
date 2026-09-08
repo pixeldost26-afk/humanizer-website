@@ -36,9 +36,7 @@ interface SampleCase {
   humanScore: number;
   humanPerplexity: number;
   humanBurstiness: number;
-  grammarlyStatus: string;
-  turnitinStatus: string;
-  gptZeroStatus: string;
+  cadenceStatus: string;
   summary: string;
 }
 
@@ -64,9 +62,7 @@ const CASES: SampleCase[] = [
     humanScore: 0,
     humanPerplexity: 89.4,
     humanBurstiness: 5.8,
-    grammarlyStatus: "0% AI Written",
-    turnitinStatus: "0% AI Detected",
-    gptZeroStatus: "100% Human",
+    cadenceStatus: "Natural Cadence",
     summary:
       "Replaces inflated academic jargon with concise, authoritative scholarly prose while preserving precise econometric terminology.",
   },
@@ -91,9 +87,7 @@ const CASES: SampleCase[] = [
     humanScore: 0,
     humanPerplexity: 91.2,
     humanBurstiness: 6.2,
-    grammarlyStatus: "0% AI Written",
-    turnitinStatus: "0% AI Detected",
-    gptZeroStatus: "100% Human",
+    cadenceStatus: "Natural Cadence",
     summary:
       "Swaps robotic introductory clauses for direct engineering explanations with varied cadence and natural developer terminology.",
   },
@@ -118,9 +112,7 @@ const CASES: SampleCase[] = [
     humanScore: 0,
     humanPerplexity: 86.7,
     humanBurstiness: 5.4,
-    grammarlyStatus: "0% AI Written",
-    turnitinStatus: "0% AI Detected",
-    gptZeroStatus: "100% Human",
+    cadenceStatus: "Natural Cadence",
     summary:
       "Eliminates empty corporate buzzwords and robotic transition adverbs in favor of pragmatic, high-impact leadership directives.",
   },
@@ -145,9 +137,7 @@ const CASES: SampleCase[] = [
     humanScore: 0,
     humanPerplexity: 94.0,
     humanBurstiness: 6.7,
-    grammarlyStatus: "0% AI Written",
-    turnitinStatus: "0% AI Detected",
-    gptZeroStatus: "100% Human",
+    cadenceStatus: "Natural Cadence",
     summary:
       "Purges generic marketing hyperbole to deliver punchy, empathetic value propositions that resonate with technical buyers.",
   },
@@ -278,7 +268,7 @@ export function InteractiveCurtainComparison() {
           </h2>
 
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Slide the divider back and forth to inspect how rigid synthetic phrasing morphs into nuanced human cadence that bypasses AI detection.
+            Slide the divider back and forth to inspect how rigid synthetic phrasing morphs into nuanced human cadence designed to reduce formulaic AI patterns.
           </p>
         </div>
 
@@ -408,7 +398,7 @@ export function InteractiveCurtainComparison() {
               onPointerDown={handlePointerDown}
               className="relative min-h-[340px] sm:min-h-[300px] w-full select-none overflow-hidden cursor-ew-resize bg-background/50"
             >
-              {/* UNDER LAYER: 100% Humanized Prose (Right reveal layer) */}
+              {/* UNDER LAYER: Natural Human Prose (Right reveal layer) */}
               <div
                 style={{
                   clipPath: `polygon(${sliderPosition}% 0, 100% 0, 100% 100%, ${sliderPosition}% 100%)`,
@@ -419,7 +409,7 @@ export function InteractiveCurtainComparison() {
                 <div className="flex items-center justify-end">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/30 shadow-sm backdrop-blur-sm">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    Humanized ({activeCase.humanScore}% AI Score)
+                    Humanized (Natural Flow)
                   </span>
                 </div>
 
@@ -437,7 +427,7 @@ export function InteractiveCurtainComparison() {
                 <div className="flex flex-wrap items-center justify-end gap-3 text-xs text-muted-foreground pt-3 border-t border-emerald-500/10">
                   <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    Passed Turnitin & Grammarly
+                    Engineered for Natural Cadence
                   </span>
                   <span className="text-foreground/80 font-mono font-medium">
                     • High Burstiness ({activeCase.humanBurstiness} σ)
@@ -547,7 +537,7 @@ export function InteractiveCurtainComparison() {
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/30">
                       <ShieldCheck className="w-3.5 h-3.5" />
-                      Humanized Output ({activeCase.humanScore}% AI)
+                      Humanized Output (Natural Cadence)
                     </span>
                     <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
                       Perplexity: {activeCase.humanPerplexity}
@@ -666,16 +656,16 @@ export function InteractiveCurtainComparison() {
             </p>
           </div>
 
-          {/* Metric 4: Multi-Scanner Clearance */}
+          {/* Metric 4: Stylistic Flow Verdict */}
           <div className="p-4 rounded-xl border border-border/80 bg-card/60 backdrop-blur-sm space-y-1.5 shadow-sm">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground">Scanner Verdict</span>
+              <span className="font-semibold text-foreground">Stylistic Flow Verdict</span>
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
             </div>
             <div className="text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-              Passed Audit
+              Natural Cadence
             </div>
-            <p className="text-[11px] text-muted-foreground">Calibrated for Turnitin, Grammarly & GPTZero standards.</p>
+            <p className="text-[11px] text-muted-foreground">Engineered to reduce predictable AI phrasing and formulaic structures.</p>
           </div>
         </div>
       </div>

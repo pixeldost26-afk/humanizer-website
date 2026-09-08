@@ -81,7 +81,7 @@ export function HeroInteractiveDemo() {
       if (data.success && data.data) {
         setCustomOutput(data.data.humanizedText);
         toast({
-          title: "Humanized to 0% AI!",
+          title: "Humanized Successfully!",
           description: "Applied natural syntactical variation and idiomatic rhythm.",
           type: "success",
         });
@@ -115,7 +115,7 @@ export function HeroInteractiveDemo() {
             <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
           </div>
           <span className="text-xs font-semibold text-muted-foreground ml-2 hidden sm:inline">
-            HumanizeAI Studio — Fluency Engine 2.0
+            ManaHumanizeAI Studio — Fluency Engine 2.0
           </span>
         </div>
 
@@ -232,7 +232,7 @@ export function HeroInteractiveDemo() {
                 ) : (
                   <>
                     <Sparkles className="w-3.5 h-3.5" />
-                    Humanize Text (0% AI)
+                    Humanize Text (Natural Flow)
                   </>
                 )}
               </button>
@@ -243,7 +243,7 @@ export function HeroInteractiveDemo() {
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  Humanized (0% AI)
+                  Humanized (Natural Cadence)
                 </span>
                 {customOutput && (
                   <button
@@ -263,7 +263,7 @@ export function HeroInteractiveDemo() {
                 )}
               </div>
               <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-                <span>Certified 0% on Grammarly & Turnitin</span>
+                <span>Engineered for Natural Human Cadence</span>
                 <Link href="/signup?callbackUrl=/humanizer" prefetch={true} className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
                   Full Editor →
                 </Link>
@@ -300,10 +300,10 @@ export function HeroInteractiveDemo() {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                    HumanizeAI (0% AI)
+                    ManaHumanizeAI (Natural Flow)
                   </span>
                   <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/20">
-                    0% AI • Passed
+                    Natural Cadence • Optimized
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-foreground leading-relaxed bg-background/50 p-4 rounded-lg border border-border/50 font-medium">
@@ -313,7 +313,7 @@ export function HeroInteractiveDemo() {
               <div className="pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
                 <span className="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                   <Check className="w-3.5 h-3.5 text-emerald-500" />
-                  Verified Natural Flow & Readability
+                  Engineered Natural Flow & Readability
                 </span>
 
                 <button

@@ -373,7 +373,7 @@ Preserve Meaning (1-5): ${options.preserveMeaning}
 Sentence Variation (1-5): ${options.sentenceVariation}
 Vocabulary Richness (1-5): ${options.vocabularyVariation}
 
-CRITICAL ANTI-DETECTION MANDATE: The rewritten text must achieve a 0% AI-generated score on modern detectors like Grammarly, Turnitin, and GPTZero.
+CRITICAL CADENCE & QUALITY MANDATE: Engineered for natural human cadence and designed to reduce formulaic AI patterns.
 - Absolutely eliminate synthetic Latinate thesaurus padding, robotically dense academic jargon, and uniform sentence structures.
 - Inject high burstiness: intentionally mix crisp, punchy sentences (4-8 words) with fluid, longer sentences.
 - Use natural human idioms, concrete verbs, and authentic transitional cadence.

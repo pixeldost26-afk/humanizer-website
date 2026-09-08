@@ -66,7 +66,7 @@ export function TwoPanelEditor({
   const [diagnosticTab, setDiagnosticTab] = useState<"none" | "waveform" | "cliches">("none");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const activeProviderName = "HumanizeAI Advanced NLP Engine";
+  const activeProviderName = "ManaHumanizeAI Advanced NLP Engine";
 
   const wordsIn = countWords(inputText);
   const charsIn = countCharacters(inputText);

@@ -303,7 +303,7 @@ export function AppShell({ children, title, description }: AppShellProps) {
                 <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
                   <Sparkles className="w-4 h-4" />
                 </div>
-                <span className="font-bold text-base">HumanizeAI</span>
+                <span className="font-bold text-base">ManaHumanizeAI</span>
               </div>
               <button
                 onClick={() => setMobileNavOpen(false)}

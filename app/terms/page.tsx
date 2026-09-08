@@ -4,8 +4,8 @@ import { FileText, ArrowLeft, CheckCircle2, AlertTriangle, Scale, ShieldCheck } 
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — HumanizeAI",
-  description: "Terms and conditions governing the use of HumanizeAI writing and detection tools.",
+  title: "Terms of Service — ManaHumanizeAI",
+  description: "Terms and conditions governing the use of ManaHumanizeAI writing and detection tools.",
 };
 
 export default function TermsOfServicePage() {
@@ -29,7 +29,7 @@ export default function TermsOfServicePage() {
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Terms of Service</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Effective Date: {lastUpdated} • HumanizeAI Platform
+            Effective Date: {lastUpdated} • ManaHumanizeAI Platform
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export default function TermsOfServicePage() {
               1. Acceptance of Terms
             </h2>
             <p>
-              By creating an account or accessing the HumanizeAI web platform, you agree to comply with and be bound by these Terms of Service and our Privacy Policy. If you do not agree, please do not use our services.
+              By creating an account or accessing the ManaHumanizeAI web platform, you agree to comply with and be bound by these Terms of Service and our Privacy Policy. If you do not agree, please do not use our services.
             </p>
           </section>
 
@@ -50,10 +50,10 @@ export default function TermsOfServicePage() {
               2. Permitted and Ethical Use
             </h2>
             <p>
-              HumanizeAI provides natural writing assistance, stylistic paraphrasing, grammar enhancement, and statistical linguistic analysis. You agree to use the service ethically:
+              ManaHumanizeAI provides natural writing assistance, stylistic paraphrasing, grammar enhancement, and statistical linguistic analysis. You agree to use the service ethically:
             </p>
             <ul className="list-disc pl-5 space-y-1">
-              <li>You may use HumanizeAI to improve the clarity, cadence, and human appeal of your writing.</li>
+              <li>You may use ManaHumanizeAI to improve the clarity, cadence, and human appeal of your writing.</li>
               <li>You agree not to use the service to generate harmful, defamatory, illegal, or harassing material.</li>
               <li>You remain responsible for reviewing and verifying all AI-generated suggestions before publishing, submitting, or relying on them in academic, legal, or commercial contexts.</li>
             </ul>
@@ -65,7 +65,7 @@ export default function TermsOfServicePage() {
               3. AI Detection & Output Disclaimer
             </h2>
             <p>
-              AI detection algorithms and linguistic scanners operate probabilistically based on statistical perplexity, burstiness, and syntax templates. HumanizeAI does not guarantee that rewritten text will receive any specific score across third-party algorithmic detectors, as detector algorithms evolve continuously and produce both false positives and false negatives.
+              AI detection algorithms and linguistic scanners operate probabilistically based on statistical perplexity, burstiness, and syntax templates. ManaHumanizeAI does not guarantee that rewritten text will receive any specific score across third-party algorithmic detectors, as detector algorithms evolve continuously and produce both false positives and false negatives.
             </p>
           </section>
 

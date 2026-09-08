@@ -146,7 +146,7 @@ export function Footer() {
 
         {/* Bottom copyright */}
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} HumanizeAI Inc. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} ManaHumanizeAI. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               Built for natural prose & high-trust writing

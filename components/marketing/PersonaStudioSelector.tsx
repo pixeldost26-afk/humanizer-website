@@ -100,7 +100,7 @@ export function PersonaStudioSelector() {
           </h2>
 
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Standard humanizers only shuffle synonyms. HumanizeAI lets you adopt authentic, curated author personas engineered for your exact audience.
+            Standard humanizers only shuffle synonyms. ManaHumanizeAI lets you adopt authentic, curated author personas engineered for your exact audience.
           </p>
         </div>
 

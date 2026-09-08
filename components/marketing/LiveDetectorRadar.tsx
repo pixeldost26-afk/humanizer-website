@@ -1,98 +1,70 @@
 "use client";
 
 import React, { useState } from "react";
-import { ShieldCheck, RefreshCw, CheckCircle2, Cpu, ExternalLink, Zap } from "lucide-react";
+import { ShieldCheck, CheckCircle2, Sparkles, Layers, Sliders } from "lucide-react";
 
-interface DetectorEngine {
+interface LinguisticDimension {
   id: string;
   name: string;
   category: string;
-  status: "passed" | "scanning";
-  score: string;
+  rating: string;
   badge: string;
   detail: string;
 }
 
-const ENGINES: DetectorEngine[] = [
+const DIMENSIONS: LinguisticDimension[] = [
   {
-    id: "grammarly",
-    name: "Grammarly AI Checker",
-    category: "Corporate & Enterprise",
-    status: "passed",
-    score: "0% AI",
-    badge: "100% Human",
-    detail: "Syntactic rhythm variation passes strict stylistic perplexity threshold.",
+    id: "burstiness",
+    name: "Sentence Burstiness & Pacing",
+    category: "Syntactic Dynamics",
+    rating: "Optimized Cadence",
+    badge: "Dynamic Lengths",
+    detail: "Breaks machine monotony by interleaving crisp, punchy assertions with rich, multi-clause explanations.",
   },
   {
-    id: "turnitin",
-    name: "Turnitin AI Detection",
-    category: "Academic Institutions",
-    status: "passed",
-    score: "0% AI",
-    badge: "Unflagged",
-    detail: "Sentence burstiness matches authentic peer-reviewed scholarship.",
+    id: "perplexity",
+    name: "Perplexity & Vocabulary Depth",
+    category: "Lexical Distribution",
+    rating: "High Variation",
+    badge: "Organic Flow",
+    detail: "Selects contextual, natural synonyms to prevent predictable n-gram clusters common in AI completions.",
   },
   {
-    id: "gptzero",
-    name: "GPTZero Model v3",
-    category: "Commercial Standard",
-    status: "passed",
-    score: "100% Human",
-    badge: "Organic",
-    detail: "N-gram transition probability demonstrates authentic author variance.",
+    id: "cliche",
+    name: "Formulaic Trope Neutralization",
+    category: "Pattern Deconstruction",
+    rating: "Clean Prose",
+    badge: "Clichés Purged",
+    detail: "Identifies and replaces overused AI filler like 'delve', 'testament to', 'beacon', and 'multifaceted dynamics'.",
   },
   {
-    id: "copyleaks",
-    name: "CopyLeaks Governance",
-    category: "Publishing & Web",
-    status: "passed",
-    score: "Human Text",
-    badge: "Authentic",
-    detail: "Zero robotic structural signatures detected across document segments.",
+    id: "transitions",
+    name: "Fluid Transitional Cadence",
+    category: "Discourse Cohesion",
+    rating: "Contextual Flow",
+    badge: "Natural Transitions",
+    detail: "Replaces repetitive textbook transitions ('furthermore', 'moreover') with smooth, conversational progression.",
   },
   {
-    id: "zerogpt",
-    name: "ZeroGPT Deep Scan",
-    category: "Algorithmic Scanner",
-    status: "passed",
-    score: "0.0% AI",
-    badge: "Clean",
-    detail: "Exceeds natural vocabulary distribution benchmarks.",
+    id: "integrity",
+    name: "Citation & Quote Shielding",
+    category: "Factual Precision",
+    rating: "100% Preserved",
+    badge: "Protected",
+    detail: "Strictly protects direct quotes, academic references, numbers, and technical terminology from alteration.",
   },
   {
-    id: "winston",
-    name: "Winston AI 4.0",
-    category: "Content Auditing",
-    status: "passed",
-    score: "99% Human",
-    badge: "Verified",
-    detail: "Complex grammatical clause coordination confirmed.",
+    id: "voice",
+    name: "Persona & Tone Calibration",
+    category: "Authorial Voice",
+    rating: "Calibrated",
+    badge: "Authentic Voice",
+    detail: "Harmonizes phrasing with target audience expectations: Academic, Executive, Conversational, or Creative.",
   },
 ];
 
 export function LiveDetectorRadar() {
-  const [isScanning, setIsScanning] = useState(false);
-  const [engines, setEngines] = useState<DetectorEngine[]>(ENGINES);
-  const [lastScanned, setLastScanned] = useState("Just now");
-
-  const handleRunRadar = () => {
-    setIsScanning(true);
-    // Mark all as scanning
-    setEngines((prev) => prev.map((e) => ({ ...e, status: "scanning" })));
-
-    // Progressively resolve each engine
-    ENGINES.forEach((eng, idx) => {
-      setTimeout(() => {
-        setEngines((prev) =>
-          prev.map((e) => (e.id === eng.id ? { ...e, status: "passed" } : e))
-        );
-        if (idx === ENGINES.length - 1) {
-          setIsScanning(false);
-          setLastScanned("Just now (All Engines Passed)");
-        }
-      }, (idx + 1) * 350);
-    });
-  };
+  const [selectedDimension, setSelectedDimension] = useState<string | null>(null);
 
   return (
     <section className="w-full py-16 sm:py-20 border-t border-border bg-background relative overflow-hidden">
@@ -102,61 +74,55 @@ export function LiveDetectorRadar() {
           <div className="space-y-2 max-w-xl">
             <div className="inline-flex items-center gap-2 badge-pro shadow-xs">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Multi-Engine Defense Grid</span>
+              <span>Probabilistic Style Analysis</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-              Live Detector Verification Matrix
+              6-Point Natural Writing Evaluation Grid
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              We test humanized outputs continuously across all major commercial detection engines to guarantee seamless real-world acceptance.
+              ManaHumanizeAI evaluates and refactors text across six critical linguistic dimensions to dismantle formulaic AI patterns and cultivate genuine human cadence.
             </p>
           </div>
 
-          <button
-            onClick={handleRunRadar}
-            disabled={isScanning}
-            className="btn-primary text-xs self-start sm:self-auto shrink-0 flex items-center gap-2"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? "animate-spin" : ""}`} />
-            <span>{isScanning ? "Scanning Engines..." : "Trigger Live Radar Audit"}</span>
-          </button>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted/50 border border-border text-xs text-muted-foreground self-start sm:self-auto">
+            <Layers className="w-3.5 h-3.5 text-indigo-500" />
+            <span>Linguistic Analysis Engine</span>
+          </div>
         </div>
 
-        {/* 6-Engine Radar Cards Grid */}
+        {/* 6-Dimension Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {engines.map((eng) => {
-            const isDone = eng.status === "passed";
+          {DIMENSIONS.map((dim) => {
+            const isSelected = selectedDimension === dim.id;
             return (
               <div
-                key={eng.id}
-                className="card-pro p-5 flex flex-col justify-between space-y-4 transition-all hover:border-emerald-500/40"
+                key={dim.id}
+                onClick={() => setSelectedDimension(isSelected ? null : dim.id)}
+                className={`card-pro p-5 flex flex-col justify-between space-y-4 transition-all cursor-pointer ${
+                  isSelected
+                    ? "border-indigo-500 shadow-md shadow-indigo-500/10"
+                    : "hover:border-emerald-500/40"
+                }`}
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      {eng.category}
+                      {dim.category}
                     </span>
-                    {isDone ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                        {eng.badge}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20 animate-pulse">
-                        <RefreshCw className="w-3 h-3 animate-spin" />
-                        Auditing...
-                      </span>
-                    )}
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                      {dim.badge}
+                    </span>
                   </div>
 
-                  <h3 className="text-base font-bold text-foreground">{eng.name}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{eng.detail}</p>
+                  <h3 className="text-base font-bold text-foreground">{dim.name}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{dim.detail}</p>
                 </div>
 
                 <div className="pt-3 border-t border-border flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Observed Score:</span>
+                  <span className="text-xs text-muted-foreground">Optimization Standard:</span>
                   <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">
-                    {eng.score}
+                    {dim.rating}
                   </span>
                 </div>
               </div>
@@ -164,15 +130,15 @@ export function LiveDetectorRadar() {
           })}
         </div>
 
-        {/* Live Audit Footer Strip */}
+        {/* Informative Footer Strip */}
         <div className="p-4 rounded-xl bg-muted/30 border border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
             <span>
-              Radar Status: <strong>All 6 Engines Synchronized & Passing</strong>
+              Engine Framework: <strong>6-Tier Probabilistic Linguistic Optimization</strong>
             </span>
           </div>
-          <div>Last checked: {lastScanned}</div>
+          <div>Designed to improve readability and stylistic variation</div>
         </div>
       </div>
     </section>

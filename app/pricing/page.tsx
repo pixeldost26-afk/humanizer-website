@@ -18,9 +18,9 @@ import {
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "100% Free Access — HumanizeAI",
+  title: "100% Free Access — ManaHumanizeAI",
   description:
-    "HumanizeAI is completely free to use with unlimited words. No billing plans, credit cards, or subscriptions required.",
+    "ManaHumanizeAI is completely free to use with unlimited words. No billing plans, credit cards, or subscriptions required.",
 };
 
 export default function PricingPage() {
@@ -28,7 +28,7 @@ export default function PricingPage() {
     {
       name: "AI Humanizer",
       href: "/humanizer",
-      desc: "Turn robotic text into 100% human-written prose with natural cadence.",
+      desc: "Transform robotic text into natural human prose with fluid cadence.",
       icon: Sparkles,
       color: "text-indigo-500 bg-indigo-500/10",
     },
@@ -88,7 +88,7 @@ export default function PricingPage() {
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-foreground leading-tight">
-            HumanizeAI is <span className="text-gradient">100% Free</span>
+            ManaHumanizeAI is <span className="text-gradient">100% Free</span>
           </h1>
 
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">

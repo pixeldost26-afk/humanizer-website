@@ -1,13 +1,13 @@
 /**
- * HumanizeAI Advanced Natural Language Processing (NLP) Engine
+ * ManaHumanizeAI Advanced Natural Language Processing (NLP) Engine
  *
- * Designed to achieve 0% AI detection on commercial detectors (Grammarly, Turnitin, GPTZero, CopyLeaks):
+ * Designed to reduce formulaic AI patterns and cultivate authentic human cadence:
  * 1. Quote & Citation Shielding (preserves exact academic quotes, page citations, brackets, markdown links)
  * 2. Purged Latinate Fluff: Absolutely zero synthetic academic word-salad (no "syntactic units", "empirical word count")
  * 3. Authentic Human Idioms & Transitional Cadence for all 6 modes (Academic, Natural, Standard, Professional, Casual, Creative)
  * 4. Deep AI Cliché & ChatGPT Stock Vocabulary Eraser (delve, tapestry, testament, beacon, pivotal, etc.)
  * 5. Syntactic Burstiness Engine: breaks monotonic rhythms, varies sentence lengths, injects em-dashes
- * 6. Non-Deterministic Multi-Pass Generation: every run delivers a fresh, unique, 100% human-sounding output
+ * 6. Non-Deterministic Multi-Pass Generation: every run delivers a fresh, unique, authentic human-sounding output
  */
 
 export interface NLPHumanizeOptions {

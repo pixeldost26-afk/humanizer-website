@@ -155,7 +155,7 @@ export default function ForgotPasswordPage() {
             <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/25 transition-transform group-hover:scale-105">
               <Sparkles className="w-5 h-5" />
             </div>
-            <span className="text-2xl font-extrabold tracking-tight text-foreground">HumanizeAI</span>
+            <span className="text-2xl font-extrabold tracking-tight text-foreground">ManaHumanizeAI</span>
           </Link>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             {step === 3 ? "Password Reset Complete" : "Reset Your Password"}

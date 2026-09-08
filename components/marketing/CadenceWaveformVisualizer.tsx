@@ -182,7 +182,7 @@ export function CadenceWaveformVisualizer({
             </div>
             <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
               <span>Natural tempo: short punches + lyrical clauses</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Passed: 0% AI</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Natural Human Cadence</span>
             </div>
           </div>
         )}

@@ -52,7 +52,7 @@ export function BentoFeatureGrid() {
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
                 Commercial AI models write with predictable sentence rhythms and Latinate buzzwords.
                 ManaHumanizeAI dismantles robotic patterns, introduces human sentence burstiness, and
-                produces fluid writing engineered to <strong>bypass leading AI detectors seamlessly</strong>.
+                produces fluid writing engineered to <strong>reduce formulaic AI patterns with authentic cadence</strong>.
               </p>
 
               {/* Mode Pills */}
@@ -80,7 +80,7 @@ export function BentoFeatureGrid() {
 
             <div className="pt-6 mt-6 border-t border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <span className="text-xs text-muted-foreground font-medium">
-                Guaranteed 0% Detection • Preserves Citations & Quotes
+                Natural-Flow Optimization • Preserves Citations & Quotes
               </span>
               <Link
                 href="/signup?callbackUrl=/humanizer"
@@ -115,7 +115,7 @@ export function BentoFeatureGrid() {
               <div className="space-y-2 pt-2 text-xs">
                 <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-medium flex items-center justify-between">
                   <span>Humanized Output</span>
-                  <span className="font-bold">Human Verified (&lt;5% AI)</span>
+                  <span className="font-bold">Natural Cadence (Low Pattern Score)</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-300 font-medium flex items-center justify-between">
                   <span>Raw Textbook AI</span>

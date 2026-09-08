@@ -28,8 +28,8 @@ export function PipelineArchitecture() {
     },
     {
       num: "04",
-      name: "0% AI Verification",
-      desc: "Validates against commercial detector algorithms (Grammarly, Turnitin) to guarantee clean human authorship.",
+      name: "Probabilistic Cadence Review",
+      desc: "Evaluates sentence burstiness, vocabulary diversity, and natural cadence to substantially reduce formulaic patterns before finalizing.",
       icon: ShieldCheck,
       color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
     },
