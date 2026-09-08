@@ -24,12 +24,24 @@ services:
       - key: NEXTAUTH_SECRET
         generateValue: true
       - key: AI_PROVIDER
-        value: demo
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
       # Set NEXTAUTH_URL and NEXT_PUBLIC_APP_URL to your Render web service URL (e.g., https://humanize-ai.onrender.com)
       - key: NEXTAUTH_URL
         sync: false
       - key: NEXT_PUBLIC_APP_URL
         sync: false
-      # Optional: Add your OpenAI API Key if you want live AI responses instead of demo mode
-      # - key: OPENAI_API_KEY
-      #   sync: false
+      # Optional: Stripe Payment Gateway
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      # Optional: Razorpay Payment Gateway
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+

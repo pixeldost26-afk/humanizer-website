@@ -1,13 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { humanizeRequestSchema } from "@/lib/validation/schemas";
 import { getAIEngine } from "@/lib/ai";
-import { getCurrentUser } from "@/lib/auth/session";
+import { requireAuth } from "@/lib/auth/session";
 import { checkAndDeductCredits } from "@/lib/usage/credit-service";
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
 import { countWords } from "@/lib/utils";
 import prisma from "@/lib/db/client";
 
 export async function POST(req: NextRequest) {
   try {
+    const clientIp = getClientIp(req.headers);
+
+    // 1. Authenticate user
+    const { user, response: authResponse } = await requireAuth();
+    if (authResponse || !user) {
+      return authResponse || NextResponse.json({ success: false, error: "Authentication required." }, { status: 401 });
+    }
+
+    // 2. Enforce rate limiting
+    const rateLimit = checkRateLimit(`humanize:${user.id}`, { limit: 25, windowMs: 60_000 });
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Rate limit reached. Please wait ${rateLimit.resetSeconds} seconds before sending another request.`,
+        },
+        { status: 429 }
+      );
+    }
+
+    // 3. Validate input
     const body = await req.json();
     const parseResult = humanizeRequestSchema.safeParse(body);
 
@@ -24,26 +46,14 @@ export async function POST(req: NextRequest) {
     const { text, mode, preserveMeaning, preserveFormatting, sentenceVariation, vocabularyVariation, tone } =
       parseResult.data;
 
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Please sign up or sign in to use the AI Humanizer.",
-          requireAuth: true,
-        },
-        { status: 401 }
-      );
-    }
-    const userId = user.id;
     const wordCount = countWords(text);
 
-    // Credit enforcement (except guest users have a local quota)
+    // 4. Check & atomically deduct credits
     const creditResult = await checkAndDeductCredits({
-      userId,
+      userId: user.id,
       tool: "HUMANIZER",
       wordCount,
-      ipAddress: req.ip || req.headers.get("x-forwarded-for") || undefined,
+      ipAddress: clientIp,
     });
 
     if (!creditResult.success) {
@@ -56,6 +66,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 5. Execute AI Humanization
     const engine = getAIEngine();
     const result = await engine.humanizeText(text, {
       mode,
@@ -66,40 +77,37 @@ export async function POST(req: NextRequest) {
       tone,
     });
 
-    const effectiveUserId = user?.id || (await prisma.user.findFirst({ where: { email: "user@humanizeai.com" } }))?.id;
+    // 6. Record document and generation history in database
+    try {
+      const createdDoc = await prisma.document.create({
+        data: {
+          userId: user.id,
+          title: `Humanized: ${text.slice(0, 35).trim()}...`,
+          content: result.humanizedText,
+          toolType: "HUMANIZER",
+          wordCount: result.humanizedWordCount,
+          charCount: result.humanizedText.length,
+        },
+      });
 
-    if (effectiveUserId) {
-      try {
-        const createdDoc = await prisma.document.create({
-          data: {
-            userId: effectiveUserId,
-            title: `Humanized: ${text.slice(0, 30)}...`,
-            content: result.humanizedText,
-            toolType: "HUMANIZER",
-            wordCount: result.humanizedWordCount,
-            charCount: result.humanizedText.length,
-          },
-        });
-
-        await prisma.generation.create({
-          data: {
-            userId: effectiveUserId,
-            documentId: createdDoc.id,
-            tool: "HUMANIZER",
-            inputSnippet: text.slice(0, 150),
-            outputText: result.humanizedText,
-            wordCount: result.humanizedWordCount,
-            creditsCharged: creditResult.requiredCredits,
-            metadata: JSON.stringify({
-              mode,
-              readingEase: result.readingEase,
-              metrics: result.metrics,
-            }),
-          },
-        });
-      } catch (dbErr) {
-        console.warn("Could not save generation record:", dbErr);
-      }
+      await prisma.generation.create({
+        data: {
+          userId: user.id,
+          documentId: createdDoc.id,
+          tool: "HUMANIZER",
+          inputSnippet: text.slice(0, 150),
+          outputText: result.humanizedText,
+          wordCount: result.humanizedWordCount,
+          creditsCharged: creditResult.requiredCredits,
+          metadata: JSON.stringify({
+            mode,
+            readingEase: result.readingEase,
+            metrics: result.metrics,
+          }),
+        },
+      });
+    } catch (dbErr) {
+      console.warn("[Database Save Error]:", dbErr);
     }
 
     return NextResponse.json({
@@ -116,7 +124,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: "An unexpected error occurred while humanizing your text. Please try again.",
+        error: error.message || "An unexpected error occurred while humanizing your text. Please try again.",
       },
       { status: 500 }
     );

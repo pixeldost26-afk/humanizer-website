@@ -1,3 +1,5 @@
+import crypto from "crypto";
+
 export interface RazorpayOrderParams {
   amount: number; // in INR
   currency?: string;
@@ -9,19 +11,10 @@ export async function createRazorpayOrder(params: RazorpayOrderParams) {
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-  if (!keyId || !keySecret) {
-    // Return deterministic mock order for development
-    return {
-      id: `order_mock_${Date.now()}`,
-      entity: "order",
-      amount: params.amount * 100, // convert to paise
-      amount_paid: 0,
-      amount_due: params.amount * 100,
-      currency: params.currency || "INR",
-      receipt: params.receipt,
-      status: "created",
-      isDemo: true,
-    };
+  if (!keyId || !keySecret || keyId.trim() === "" || keySecret.trim() === "") {
+    throw new Error(
+      "Razorpay payment gateway is not configured. RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are required."
+    );
   }
 
   const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
@@ -32,7 +25,7 @@ export async function createRazorpayOrder(params: RazorpayOrderParams) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      amount: params.amount * 100,
+      amount: Math.round(params.amount * 100), // convert INR to paise
       currency: params.currency || "INR",
       receipt: params.receipt,
       notes: params.notes,
@@ -45,5 +38,40 @@ export async function createRazorpayOrder(params: RazorpayOrderParams) {
   }
 
   const data = await res.json();
-  return { ...data, isDemo: false };
+  return { ...data, keyId };
 }
+
+/**
+ * Verify Razorpay payment signature using HMAC SHA-256
+ */
+export function verifyRazorpayPaymentSignature(
+  orderId: string,
+  paymentId: string,
+  signature: string,
+  secret: string | undefined
+): boolean {
+  if (!orderId || !paymentId || !signature || !secret) {
+    return false;
+  }
+
+  try {
+    const text = `${orderId}|${paymentId}`;
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(text)
+      .digest("hex");
+
+    const a = Buffer.from(signature);
+    const b = Buffer.from(expectedSignature);
+
+    if (a.length !== b.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(a, b);
+  } catch (err) {
+    console.error("Razorpay signature verification error:", err);
+    return false;
+  }
+}
+

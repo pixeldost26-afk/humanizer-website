@@ -1,25 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
+import { requireAuth } from "@/lib/auth/session";
 import prisma from "@/lib/db/client";
-
-async function getEffectiveUserId(user: any): Promise<string> {
-  if (user?.id) return user.id;
-  const demoUser = await prisma.user.findFirst({
-    where: { email: "user@humanizeai.com" },
-  });
-  return demoUser?.id || "user-default-id";
-}
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const user = await getCurrentUser();
-  const userId = await getEffectiveUserId(user);
+  const { user, response: authResponse } = await requireAuth();
+  if (authResponse || !user) {
+    return authResponse || NextResponse.json({ success: false, error: "Authentication required." }, { status: 401 });
+  }
 
   try {
     const doc = await prisma.document.findFirst({
-      where: { id: params.id, userId },
+      where: { id: params.id, userId: user.id },
     });
 
     if (!doc) {
@@ -42,13 +36,15 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const user = await getCurrentUser();
-  const userId = await getEffectiveUserId(user);
+  const { user, response: authResponse } = await requireAuth();
+  if (authResponse || !user) {
+    return authResponse || NextResponse.json({ success: false, error: "Authentication required." }, { status: 401 });
+  }
 
   try {
     const body = await req.json();
     const updated = await prisma.document.updateMany({
-      where: { id: params.id, userId },
+      where: { id: params.id, userId: user.id },
       data: {
         ...(body.title ? { title: body.title } : {}),
         ...(body.content ? { content: body.content } : {}),
@@ -58,7 +54,7 @@ export async function PATCH(
 
     if (updated.count === 0) {
       return NextResponse.json(
-        { success: false, error: "Document not found or update unauthorized." },
+        { success: false, error: "Document not found or unauthorized." },
         { status: 404 }
       );
     }
@@ -77,12 +73,14 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const user = await getCurrentUser();
-  const userId = await getEffectiveUserId(user);
+  const { user, response: authResponse } = await requireAuth();
+  if (authResponse || !user) {
+    return authResponse || NextResponse.json({ success: false, error: "Authentication required." }, { status: 401 });
+  }
 
   try {
     const deleted = await prisma.document.deleteMany({
-      where: { id: params.id, userId },
+      where: { id: params.id, userId: user.id },
     });
 
     if (deleted.count === 0) {

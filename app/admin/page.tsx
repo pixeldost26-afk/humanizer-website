@@ -30,8 +30,12 @@ import {
 } from "recharts";
 import { useToast } from "@/components/ui/toast";
 import { formatNumber, formatDate } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const { toast } = useToast();
   const [statsData, setStatsData] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
@@ -41,6 +45,18 @@ export default function AdminDashboardPage() {
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [creditToAdd, setCreditToAdd] = useState(1000);
   const [newPlan, setNewPlan] = useState("PRO");
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (status === "unauthenticated" || (session?.user as any)?.role !== "ADMIN") {
+      toast({
+        title: "Access Denied",
+        description: "Admin privileges are required to access this console.",
+        type: "error",
+      });
+      router.push("/dashboard");
+    }
+  }, [status, session, router]);
 
   const fetchAdminData = async () => {
     setIsLoading(true);
@@ -105,10 +121,10 @@ export default function AdminDashboardPage() {
               <Users className="w-4 h-4 text-indigo-500" />
             </div>
             <div className="text-2xl sm:text-3xl font-black text-foreground">
-              {statsData?.stats?.totalUsers || 48}
+              {statsData?.stats?.totalUsers ?? 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              {statsData?.stats?.activeUsersMonthly || 34} monthly active
+              {statsData?.stats?.activeUsersMonthly ?? 0} active users
             </p>
           </div>
 
@@ -118,9 +134,9 @@ export default function AdminDashboardPage() {
               <DollarSign className="w-4 h-4 text-emerald-500" />
             </div>
             <div className="text-2xl sm:text-3xl font-black text-foreground">
-              ${statsData?.stats?.estimatedMRR || 840}
+              ${statsData?.stats?.estimatedMRR ?? 0}
             </div>
-            <p className="text-xs text-emerald-600 font-medium">+14% vs last month</p>
+            <p className="text-xs text-emerald-600 font-medium">From active subscriptions</p>
           </div>
 
           <div className="p-5 rounded-3xl bg-card border border-border/80 shadow-sm space-y-2">
@@ -129,7 +145,7 @@ export default function AdminDashboardPage() {
               <Activity className="w-4 h-4 text-purple-500" />
             </div>
             <div className="text-2xl sm:text-3xl font-black text-foreground">
-              {formatNumber(statsData?.stats?.totalWordsProcessed || 64200)}
+              {formatNumber(statsData?.stats?.totalWordsProcessed ?? 0)}
             </div>
             <p className="text-xs text-muted-foreground">Across all AI tools</p>
           </div>
@@ -143,7 +159,7 @@ export default function AdminDashboardPage() {
               {statsData?.stats?.systemUptime || "99.98%"}
             </div>
             <p className="text-xs text-muted-foreground">
-              Error rate: {statsData?.stats?.errorRate || "0.12%"}
+              Error rate: {statsData?.stats?.errorRate || "0.00%"}
             </p>
           </div>
         </div>

@@ -1,0 +1,17 @@
+{
+  "name": "HumanizeAI — Make AI Writing Sound Naturally Yours",
+  "short_name": "HumanizeAI",
+  "description": "Transform AI-generated text into authentic, natural human writing. Advanced AI Content Detector, Paraphraser, Grammar Enhancer, and Writing Assistant.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B0F19",
+  "theme_color": "#7C3AED",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
+

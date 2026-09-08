@@ -1,27 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
+import { requireAuth } from "@/lib/auth/session";
 import { saveDocumentSchema } from "@/lib/validation/schemas";
 import { countWords, countCharacters } from "@/lib/utils";
 import prisma from "@/lib/db/client";
 
-async function getEffectiveUserId(user: any): Promise<string> {
-  if (user?.id) return user.id;
-  const demoUser = await prisma.user.findFirst({
-    where: { email: "user@humanizeai.com" },
-  });
-  return demoUser?.id || "user-default-id";
-}
-
 export async function GET(req: NextRequest) {
-  const user = await getCurrentUser();
-  const userId = await getEffectiveUserId(user);
+  const { user, response: authResponse } = await requireAuth();
+  if (authResponse || !user) {
+    return authResponse || NextResponse.json({ success: false, error: "Authentication required." }, { status: 401 });
+  }
 
   try {
     const { searchParams } = new URL(req.url);
     const tool = searchParams.get("tool");
     const search = searchParams.get("search");
 
-    const where: any = { userId };
+    const where: any = { userId: user.id };
     if (tool && tool !== "ALL") {
       where.toolType = tool;
     }
@@ -48,12 +42,14 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await getCurrentUser();
-  const userId = await getEffectiveUserId(user);
+  const { user, response: authResponse } = await requireAuth();
+  if (authResponse || !user) {
+    return authResponse || NextResponse.json({ success: false, error: "Authentication required." }, { status: 401 });
+  }
 
-  // Check if multipart form (file upload) or json (saving text)
   const contentType = req.headers.get("content-type") || "";
 
+  // 1. Handle File Upload
   if (contentType.includes("multipart/form-data")) {
     try {
       const formData = await req.formData();
@@ -87,16 +83,14 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Extract text
+      // Extract and sanitize text
       let extractedText = "";
       if (extension === "txt" || extension === "md" || extension === "json") {
         extractedText = await file.text();
       } else {
-        // For binary files (docx/pdf), extract buffer text or sanitized printable string
         const buffer = await file.arrayBuffer();
         const decoder = new TextDecoder("utf-8", { fatal: false });
         const raw = decoder.decode(buffer);
-        // Clean non-printable bytes
         extractedText = raw.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, " ").trim();
         if (extractedText.length > 30000) {
           extractedText = extractedText.slice(0, 30000);
@@ -123,7 +117,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // JSON Save Document
+  // 2. Handle JSON Save Document
   try {
     const body = await req.json();
     const parsed = saveDocumentSchema.safeParse(body);
@@ -141,7 +135,7 @@ export async function POST(req: NextRequest) {
 
     const doc = await prisma.document.create({
       data: {
-        userId,
+        userId: user.id,
         title,
         content,
         toolType,

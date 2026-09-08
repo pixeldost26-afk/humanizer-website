@@ -32,6 +32,12 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "HumanizeAI Team" }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
+
   openGraph: {
     title: "HumanizeAI — Make AI Writing Sound Naturally Yours",
     description:
@@ -55,6 +61,7 @@ export const metadata: Metadata = {
     description: "Transform AI text into clear, human-quality writing. Advanced detection, paraphraser & grammar.",
   },
 };
+
 
 export default function RootLayout({
   children,

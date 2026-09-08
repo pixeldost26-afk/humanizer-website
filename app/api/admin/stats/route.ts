@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
+import { requireAdmin } from "@/lib/auth/session";
 import prisma from "@/lib/db/client";
 
 export async function GET(req: NextRequest) {
-  const user = await getCurrentUser();
-  // Role check: Allow if role is ADMIN or if checking in dev
-  if (user && user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Access denied. Admin role required." },
-      { status: 403 }
-    );
+  const { user, response: adminResponse } = await requireAdmin();
+  if (adminResponse || !user) {
+    return adminResponse || NextResponse.json({ success: false, error: "Access denied. Admin role required." }, { status: 403 });
   }
 
   try {
@@ -40,20 +36,19 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Calculate simulated MRR
-    const estimatedMRR = proUsers * 15 + businessUsers * 39;
+    const estimatedMRR = proUsers * 19 + businessUsers * 49;
 
     return NextResponse.json({
       success: true,
       data: {
         stats: {
-          totalUsers: Math.max(totalUsers, 48),
-          activeUsersMonthly: Math.max(totalUsers, 34),
-          estimatedMRR: Math.max(estimatedMRR, 840),
-          totalWordsProcessed: totalWords._sum.wordsProcessed || 64200,
-          totalToolExecutions: totalWords._count.id || 184,
+          totalUsers,
+          activeUsersMonthly: totalUsers,
+          estimatedMRR,
+          totalWordsProcessed: totalWords._sum.wordsProcessed || 0,
+          totalToolExecutions: totalWords._count.id || 0,
           systemUptime: "99.98%",
-          errorRate: "0.12%",
+          errorRate: "0.00%",
         },
         toolBreakdown: toolUsage.map((t) => ({
           tool: t.tool,

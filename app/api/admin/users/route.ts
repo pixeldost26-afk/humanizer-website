@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
+import { requireAdmin } from "@/lib/auth/session";
 import prisma from "@/lib/db/client";
 
 export async function GET(req: NextRequest) {
-  const user = await getCurrentUser();
-  if (user && user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Access denied. Admin role required." },
-      { status: 403 }
-    );
+  const { user, response: adminResponse } = await requireAdmin();
+  if (adminResponse || !user) {
+    return adminResponse || NextResponse.json({ success: false, error: "Access denied. Admin role required." }, { status: 403 });
   }
 
   const { searchParams } = new URL(req.url);
@@ -19,8 +16,8 @@ export async function GET(req: NextRequest) {
       where: query
         ? {
             OR: [
-              { name: { contains: query } },
-              { email: { contains: query } },
+              { name: { contains: query, mode: "insensitive" } },
+              { email: { contains: query, mode: "insensitive" } },
             ],
           }
         : undefined,
@@ -36,6 +33,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ success: true, data: users, error: null });
   } catch (err) {
+    console.error("Admin user directory error:", err);
     return NextResponse.json(
       { success: false, error: "Failed to fetch user directory." },
       { status: 500 }
@@ -44,12 +42,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const user = await getCurrentUser();
-  if (user && user.role !== "ADMIN") {
-    return NextResponse.json(
-      { success: false, error: "Access denied. Admin role required." },
-      { status: 403 }
-    );
+  const { user, response: adminResponse } = await requireAdmin();
+  if (adminResponse || !user) {
+    return adminResponse || NextResponse.json({ success: false, error: "Access denied. Admin role required." }, { status: 403 });
   }
 
   try {
@@ -63,14 +58,14 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    if (role) {
+    if (role && ["USER", "ADMIN"].includes(role)) {
       await prisma.user.update({
         where: { id: userId },
         data: { role },
       });
     }
 
-    if (planId) {
+    if (planId && ["FREE", "PRO", "BUSINESS"].includes(planId)) {
       await prisma.subscription.upsert({
         where: { userId },
         update: { planId },
@@ -83,7 +78,7 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
-    if (addBonusCredits && typeof addBonusCredits === "number") {
+    if (addBonusCredits && typeof addBonusCredits === "number" && addBonusCredits > 0) {
       await prisma.creditBalance.upsert({
         where: { userId },
         update: { bonusCredits: { increment: addBonusCredits } },
@@ -95,17 +90,15 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
-    // Log admin action
-    if (user?.id) {
-      await prisma.adminLog.create({
-        data: {
-          adminId: user.id,
-          action: "UPDATE_USER_SETTINGS",
-          targetUserId: userId,
-          details: JSON.stringify({ role, planId, addBonusCredits }),
-        },
-      });
-    }
+    // Record admin log for audit trail
+    await prisma.adminLog.create({
+      data: {
+        adminId: user.id,
+        action: "UPDATE_USER_SETTINGS",
+        targetUserId: userId,
+        details: JSON.stringify({ role, planId, addBonusCredits }),
+      },
+    });
 
     return NextResponse.json({
       success: true,
@@ -113,6 +106,7 @@ export async function PATCH(req: NextRequest) {
       error: null,
     });
   } catch (err: any) {
+    console.error("Admin user update error:", err);
     return NextResponse.json(
       { success: false, error: err.message || "Failed to update user." },
       { status: 500 }

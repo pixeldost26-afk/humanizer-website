@@ -32,6 +32,7 @@ model User {
   payments      Payment[]
   apiKeys       ApiKey[]
   adminLogs     AdminLog[]
+  preference    UserPreference?
 
   @@index([email])
 }
@@ -219,3 +220,23 @@ model AdminLog {
   @@index([adminId])
   @@index([targetUserId])
 }
+
+model UserPreference {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  theme             String   @default("system")
+  preferredTone     String   @default("Natural")
+  preferredStyle    String   @default("Standard")
+  preferredLanguage String   @default("en")
+  emailAlerts       Boolean  @default(true)
+  productUpdates    Boolean  @default(true)
+  securityAlerts    Boolean  @default(true)
+  timezone          String   @default("UTC")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
