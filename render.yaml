@@ -29,10 +29,17 @@ services:
         sync: false
       - key: OPENAI_MODEL
         value: gpt-4o-mini
+      - key: NEXTAUTH_TRUST_HOST
+        value: "true"
       # Set NEXTAUTH_URL and NEXT_PUBLIC_APP_URL to your Render web service URL (e.g., https://humanize-ai.onrender.com)
       - key: NEXTAUTH_URL
         sync: false
       - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      # Google OAuth 2.0 Credentials
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
         sync: false
       # Optional: Stripe Payment Gateway
       - key: STRIPE_SECRET_KEY

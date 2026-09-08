@@ -4,6 +4,35 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import prisma from "../db/client";
 
+// Normalize environment URLs and remove accidental trailing slashes
+const normalizedAppUrl = (
+  process.env.NEXTAUTH_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "http://localhost:3000"
+)
+  .trim()
+  .replace(/\/+$/, "");
+
+if (!process.env.NEXTAUTH_URL && normalizedAppUrl) {
+  process.env.NEXTAUTH_URL = normalizedAppUrl;
+}
+
+// Ensure proxy trust is enabled for Render / reverse proxies
+if (!process.env.NEXTAUTH_TRUST_HOST) {
+  process.env.NEXTAUTH_TRUST_HOST = "true";
+}
+
+// Clean and sanitize Google OAuth credentials (strip quotes, newlines, and trailing spaces)
+const rawGoogleId = process.env.GOOGLE_CLIENT_ID || "";
+const rawGoogleSecret = process.env.GOOGLE_CLIENT_SECRET || "";
+
+const googleClientId = rawGoogleId.trim().replace(/^["']|["']$/g, "");
+const googleClientSecret = rawGoogleSecret.trim().replace(/^["']|["']$/g, "");
+
+const isHttps = normalizedAppUrl.startsWith("https://");
+const cookiePrefix = isHttps ? "__Secure-" : "";
+const hostCookiePrefix = isHttps ? "__Host-" : "";
+
 const providers: NextAuthOptions["providers"] = [
   CredentialsProvider({
     name: "Credentials",
@@ -58,24 +87,37 @@ const providers: NextAuthOptions["providers"] = [
   }),
 ];
 
-// Register Google OAuth Provider
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+// Register Google OAuth Provider with trimmed credentials
+if (googleClientId && googleClientSecret) {
   providers.push(
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
       allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          prompt: "select_account",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     })
   );
 } else {
-  // Graceful fallback provider so NextAuth routes Google requests
-  providers.push(
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "google-oauth-unconfigured-id",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "google-oauth-unconfigured-secret",
-      allowDangerousEmailAccountLinking: true,
-    })
+  console.warn(
+    `⚠️ [Auth Warning] Google OAuth credentials incomplete (Client ID: ${
+      googleClientId ? "Present" : "Missing"
+    }, Client Secret: ${googleClientSecret ? "Present" : "Missing"}). Google sign-in will not succeed until both are configured in Render.`
   );
+  if (googleClientId) {
+    providers.push(
+      GoogleProvider({
+        clientId: googleClientId,
+        clientSecret: googleClientSecret || "unconfigured-secret",
+        allowDangerousEmailAccountLinking: true,
+      })
+    );
+  }
 }
 
 export const authOptions: NextAuthOptions = {
@@ -88,6 +130,55 @@ export const authOptions: NextAuthOptions = {
     error: "/login",
   },
   providers,
+  useSecureCookies: isHttps,
+  cookies: {
+    sessionToken: {
+      name: `${cookiePrefix}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isHttps,
+      },
+    },
+    callbackUrl: {
+      name: `${cookiePrefix}next-auth.callback-url`,
+      options: {
+        sameSite: "lax",
+        path: "/",
+        secure: isHttps,
+      },
+    },
+    csrfToken: {
+      name: `${hostCookiePrefix}next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isHttps,
+      },
+    },
+    pkceCodeVerifier: {
+      name: `${cookiePrefix}next-auth.pkce.code_verifier`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isHttps,
+        maxAge: 900,
+      },
+    },
+    state: {
+      name: `${cookiePrefix}next-auth.state`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isHttps,
+        maxAge: 900,
+      },
+    },
+  },
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google" && user.email) {
@@ -147,6 +238,11 @@ export const authOptions: NextAuthOptions = {
             });
 
             if (!existingAccount) {
+              const safeExpiresAt =
+                typeof account.expires_at === "number"
+                  ? Math.min(Math.max(Math.floor(account.expires_at), -2147483648), 2147483647)
+                  : null;
+
               await prisma.account.create({
                 data: {
                   userId: dbUser.id,
@@ -157,7 +253,7 @@ export const authOptions: NextAuthOptions = {
                   token_type: account.token_type,
                   scope: account.scope,
                   id_token: account.id_token,
-                  expires_at: account.expires_at,
+                  expires_at: safeExpiresAt,
                   refresh_token: account.refresh_token,
                 },
               });
@@ -185,7 +281,7 @@ export const authOptions: NextAuthOptions = {
       if (!token.id && token.email) {
         try {
           const dbUser = await prisma.user.findUnique({
-            where: { email: token.email.toLowerCase() },
+            where: { email: token.email.toLowerCase().trim() },
           });
           if (dbUser) {
             token.id = dbUser.id;
@@ -201,6 +297,18 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).role = (token.role as string) || "USER";
       }
       return session;
+    },
+  },
+  debug: true,
+  logger: {
+    error(code, metadata) {
+      console.error(`[NextAuth Error] [${code}]:`, metadata);
+    },
+    warn(code) {
+      console.warn(`[NextAuth Warn] [${code}]`);
+    },
+    debug(code, metadata) {
+      console.log(`[NextAuth Debug] [${code}]:`, metadata);
     },
   },
   secret: process.env.NEXTAUTH_SECRET || "humanizeai-super-secure-nextauth-secret-key-32-chars-minimum",
