@@ -21,6 +21,9 @@ if (!process.env.NEXTAUTH_URL && normalizedAppUrl) {
 if (!process.env.NEXTAUTH_TRUST_HOST) {
   process.env.NEXTAUTH_TRUST_HOST = "true";
 }
+if (!process.env.AUTH_TRUST_HOST) {
+  process.env.AUTH_TRUST_HOST = "true";
+}
 
 // Clean and sanitize Google OAuth credentials (strip quotes, newlines, and trailing spaces)
 const rawGoogleId = process.env.GOOGLE_CLIENT_ID || "";
@@ -30,8 +33,13 @@ const googleClientId = rawGoogleId.trim().replace(/^["']|["']$/g, "");
 const googleClientSecret = rawGoogleSecret.trim().replace(/^["']|["']$/g, "");
 
 const isHttps = normalizedAppUrl.startsWith("https://");
-const cookiePrefix = isHttps ? "__Secure-" : "";
-const hostCookiePrefix = isHttps ? "__Host-" : "";
+
+// Last OAuth error tracking for diagnostic visibility
+let lastOAuthError: { code: string; message: string; timestamp: string } | null = null;
+
+export function getLastOAuthError() {
+  return lastOAuthError;
+}
 
 const providers: NextAuthOptions["providers"] = [
   CredentialsProvider({
@@ -87,7 +95,7 @@ const providers: NextAuthOptions["providers"] = [
   }),
 ];
 
-// Register Google OAuth Provider with trimmed credentials
+// Register Google OAuth Provider with complete scope and trimmed credentials
 if (googleClientId && googleClientSecret) {
   providers.push(
     GoogleProvider({
@@ -99,25 +107,17 @@ if (googleClientId && googleClientSecret) {
           prompt: "select_account",
           access_type: "offline",
           response_type: "code",
+          scope: "openid email profile",
         },
       },
     })
   );
 } else {
   console.warn(
-    `⚠️ [Auth Warning] Google OAuth credentials incomplete (Client ID: ${
-      googleClientId ? "Present" : "Missing"
-    }, Client Secret: ${googleClientSecret ? "Present" : "Missing"}). Google sign-in will not succeed until both are configured in Render.`
+    `⚠️ [Auth Warning] Google OAuth credentials incomplete in environment (Client ID: ${
+      googleClientId ? "Configured" : "MISSING"
+    }, Client Secret: ${googleClientSecret ? "Configured" : "MISSING"}). Please set both in Render Environment variables.`
   );
-  if (googleClientId) {
-    providers.push(
-      GoogleProvider({
-        clientId: googleClientId,
-        clientSecret: googleClientSecret || "unconfigured-secret",
-        allowDangerousEmailAccountLinking: true,
-      })
-    );
-  }
 }
 
 export const authOptions: NextAuthOptions = {
@@ -131,54 +131,6 @@ export const authOptions: NextAuthOptions = {
   },
   providers,
   useSecureCookies: isHttps,
-  cookies: {
-    sessionToken: {
-      name: `${cookiePrefix}next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: isHttps,
-      },
-    },
-    callbackUrl: {
-      name: `${cookiePrefix}next-auth.callback-url`,
-      options: {
-        sameSite: "lax",
-        path: "/",
-        secure: isHttps,
-      },
-    },
-    csrfToken: {
-      name: `${hostCookiePrefix}next-auth.csrf-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: isHttps,
-      },
-    },
-    pkceCodeVerifier: {
-      name: `${cookiePrefix}next-auth.pkce.code_verifier`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: isHttps,
-        maxAge: 900,
-      },
-    },
-    state: {
-      name: `${cookiePrefix}next-auth.state`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: isHttps,
-        maxAge: 900,
-      },
-    },
-  },
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google" && user.email) {
@@ -303,6 +255,15 @@ export const authOptions: NextAuthOptions = {
   logger: {
     error(code, metadata) {
       console.error(`[NextAuth Error] [${code}]:`, metadata);
+      const errObj = metadata as any;
+      lastOAuthError = {
+        code,
+        message:
+          errObj?.message ||
+          errObj?.error?.message ||
+          (typeof metadata === "string" ? metadata : JSON.stringify(metadata)),
+        timestamp: new Date().toISOString(),
+      };
     },
     warn(code) {
       console.warn(`[NextAuth Warn] [${code}]`);
