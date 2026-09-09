@@ -7,13 +7,15 @@ import { signIn } from "next-auth/react";
 import { Sparkles, Lock, Mail, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import { GoogleIcon } from "@/components/ui/google-icon";
+import { getSafeRedirectUrl } from "@/lib/security/redirect";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const rawCallback = searchParams.get("callbackUrl");
+  const callbackUrl = getSafeRedirectUrl(rawCallback, "/dashboard");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -128,11 +130,14 @@ function LoginForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div className="space-y-1">
-            <label className="text-muted-foreground font-medium">Email address</label>
+            <label htmlFor="login-email" className="text-muted-foreground font-medium">Email address</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
               <input
+                id="login-email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -144,7 +149,7 @@ function LoginForm() {
 
           <div className="space-y-1">
             <div className="flex justify-between">
-              <label className="text-muted-foreground font-medium">Password</label>
+              <label htmlFor="login-password" className="text-muted-foreground font-medium">Password</label>
               <Link
                 href="/forgot-password"
                 className="text-indigo-600 dark:text-indigo-400 hover:underline"
@@ -155,7 +160,10 @@ function LoginForm() {
             <div className="relative">
               <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
               <input
+                id="login-password"
+                name="password"
                 type="password"
+                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

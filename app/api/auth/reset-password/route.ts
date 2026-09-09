@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import prisma from "@/lib/db/client";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { action, email, password } = body;
+    const { email } = body;
 
     if (!email) {
       return NextResponse.json(
@@ -23,74 +22,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Look up the user by email
+    // Check if user exists (without leaking result to the client)
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail },
-      select: { id: true, name: true, email: true },
+      select: { id: true, email: true },
     });
 
-    // Action: Verify email existence
-    if (action === "verify") {
-      if (!user) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "No account found with this email. Please check your spelling or create a new account.",
-          },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: "Account verified successfully.",
-        user: {
-          name: user.name || "User",
-          email: user.email,
-        },
-      });
+    if (user) {
+      // Log for security auditing
+      console.log(`[Security Audit] Password reset requested for user account: ${user.email}`);
+      // In production with email delivery enabled (SMTP / Resend), dispatch a signed reset token link here.
+    } else {
+      console.log(`[Security Audit] Password reset requested for non-existent email: ${normalizedEmail}`);
     }
 
-    // Action: Reset password
-    if (action === "reset") {
-      if (!password || String(password).length < 6) {
-        return NextResponse.json(
-          { success: false, error: "New password must be at least 6 characters long." },
-          { status: 400 }
-        );
-      }
-
-      if (!user) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "No account found with this email address.",
-          },
-          { status: 404 }
-        );
-      }
-
-      // Hash new password securely
-      const passwordHash = await bcrypt.hash(password, 10);
-
-      // Update password hash in database
-      await prisma.user.update({
-        where: { email: normalizedEmail },
-        data: { passwordHash },
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: "Your password has been successfully updated. You can now sign in.",
-      });
-    }
-
-    return NextResponse.json(
-      { success: false, error: "Invalid action specified." },
-      { status: 400 }
-    );
+    // Always return uniform, privacy-safe response to prevent user enumeration
+    return NextResponse.json({
+      success: true,
+      message:
+        "If an account is associated with this email address, password reset instructions have been dispatched. Please check your inbox.",
+    });
   } catch (error: any) {
-    console.error("Password reset error:", error);
+    console.error("Password reset request error:", error);
     return NextResponse.json(
       { success: false, error: "An unexpected error occurred. Please try again later." },
       { status: 500 }

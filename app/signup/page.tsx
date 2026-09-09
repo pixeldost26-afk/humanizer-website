@@ -7,13 +7,15 @@ import { signIn } from "next-auth/react";
 import { Sparkles, Lock, Mail, User, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import { GoogleIcon } from "@/components/ui/google-icon";
+import { getSafeRedirectUrl } from "@/lib/security/redirect";
 
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const rawCallback = searchParams.get("callbackUrl");
+  const callbackUrl = getSafeRedirectUrl(rawCallback, "/dashboard");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -140,11 +142,14 @@ function SignupForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div className="space-y-1">
-            <label className="text-muted-foreground font-medium">Full name</label>
+            <label htmlFor="signup-name" className="text-muted-foreground font-medium">Full name</label>
             <div className="relative">
               <User className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
               <input
+                id="signup-name"
+                name="name"
                 type="text"
+                autoComplete="name"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -155,11 +160,14 @@ function SignupForm() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-muted-foreground font-medium">Email address</label>
+            <label htmlFor="signup-email" className="text-muted-foreground font-medium">Email address</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
               <input
+                id="signup-email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -170,11 +178,14 @@ function SignupForm() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-muted-foreground font-medium">Password</label>
+            <label htmlFor="signup-password" className="text-muted-foreground font-medium">Password</label>
             <div className="relative">
               <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
               <input
+                id="signup-password"
+                name="password"
                 type="password"
+                autoComplete="new-password"
                 required
                 minLength={6}
                 value={password}

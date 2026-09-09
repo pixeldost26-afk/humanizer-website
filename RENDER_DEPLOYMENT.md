@@ -81,19 +81,16 @@ Under the **Environment Variables** section, add:
 2. **Start Phase**:
    - `npm run start:prod` runs:
      1. `prisma db push`: Automatically syncs all schema tables and indexes into PostgreSQL.
-     2. `node scripts/seed.mjs`: Seeds initial admin (`admin@humanizeai.com`) and demo pro user (`user@humanizeai.com`) without duplicating records on restarts.
-     3. `next start`: Starts the Next.js server on `$PORT`.
+     2. `next start`: Starts the Next.js server on `$PORT`.
 
 ---
 
-## Pre-Seeded Login Credentials
+## Administrator Account Configuration
 
-Once your deployment is live, access your application and log in using either:
-
-| Role | Email | Password | Access Level |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `admin@humanizeai.com` | `AdminPass123!` | Full Admin Console (`/admin`) + 250k credits |
-| **User** | `user@humanizeai.com` | `UserPass123!` | Pro Tier (`/dashboard`) + 50k credits |
+To configure an initial administrator account on Render:
+1. In your Render Dashboard, navigate to your web service's **Environment** tab.
+2. Add `ADMIN_EMAIL` (e.g. `your-email@domain.com`) and `ADMIN_PASSWORD` (a strong, unique password of at least 8 characters).
+3. If you ever need to run the seeder manually, run `node scripts/seed.mjs` via the Render Shell.
 
 ---
 

@@ -21,6 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/forgot-password",
     "/privacy",
     "/terms",
+    "/contact",
   ];
 
   return routes.map((route) => {

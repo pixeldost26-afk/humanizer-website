@@ -112,7 +112,7 @@ export function TwoPanelEditor({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `humanizeai-export-${Date.now()}.txt`;
+    link.download = `manahumanizeai-export-${Date.now()}.txt`;
     link.click();
     URL.revokeObjectURL(url);
     toast({

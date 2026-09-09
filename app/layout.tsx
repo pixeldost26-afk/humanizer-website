@@ -19,11 +19,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "ManahumanizeAI — Transform AI Writing into Natural Human Prose",
-  description:
-    "All-in-one AI writing suite. Humanize AI text, detect AI content with sentence-level transparency, paraphrase, enhance grammar, and generate compelling articles.",
+  title: "ManaHumanizeAI – AI Text Humanizer",
+  description: "Transform AI-generated text into natural human writing with ManaHumanizeAI.",
   keywords: [
-    "ManahumanizeAI",
+    "ManaHumanizeAI",
+    "AI Text Humanizer",
     "AI Humanizer",
     "Natural Writing Assistant",
     "AI Detector",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     "Make AI Sound Human",
     "Text Rewriter",
   ],
-  authors: [{ name: "ManahumanizeAI Team" }],
+  authors: [{ name: "ManaHumanizeAI Team" }],
   metadataBase: new URL(siteUrl),
   alternates: {
     canonical: "/",
@@ -45,17 +45,16 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "ManahumanizeAI — Transform AI Writing into Natural Human Prose",
-    description:
-      "Transform rigid AI-generated text into clear, natural, engaging writing while preserving original meaning. Advanced AI detector and paraphrasing suite.",
+    title: "ManaHumanizeAI – AI Text Humanizer",
+    description: "Transform AI-generated text into natural human writing with ManaHumanizeAI.",
     url: "/",
-    siteName: "ManahumanizeAI",
+    siteName: "ManaHumanizeAI",
     images: [
       {
         url: "/og-preview.png",
         width: 1200,
         height: 630,
-        alt: "ManahumanizeAI Platform Preview",
+        alt: "ManaHumanizeAI Platform Preview",
       },
     ],
     locale: "en_US",
@@ -63,8 +62,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ManahumanizeAI — Transform AI Writing into Natural Human Prose",
-    description: "Transform AI text into clear, human-quality writing. Advanced detection, paraphraser & grammar.",
+    title: "ManaHumanizeAI – AI Text Humanizer",
+    description: "Transform AI-generated text into natural human writing with ManaHumanizeAI.",
   },
 };
 

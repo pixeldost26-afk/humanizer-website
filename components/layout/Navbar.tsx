@@ -165,6 +165,12 @@ export function Navbar() {
           >
             FAQ
           </Link>
+          <Link
+            href="/contact"
+            className="px-3 py-2 rounded-lg text-foreground/80 hover:text-foreground hover:bg-muted/60 transition-colors"
+          >
+            Contact
+          </Link>
         </nav>
 
         {/* Right side controls */}
@@ -268,6 +274,13 @@ export function Navbar() {
                 </Link>
               );
             })}
+            <Link
+              href="/contact"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-foreground text-sm font-medium"
+            >
+              <span>Contact Support</span>
+            </Link>
           </div>
 
           <div className="border-t border-border pt-3 space-y-2">

@@ -1,8 +1,8 @@
-# HumanizeAI — All-in-One AI Writing, Detection & Humanization Platform
+# ManaHumanizeAI — All-in-One AI Writing, Detection & Humanization Platform
 
 **Make AI writing sound naturally yours.**
 
-HumanizeAI is a full-stack, production-quality SaaS web application engineered to transform robotic AI text into clear, natural, engaging writing while preserving 100% of the original meaning.
+ManaHumanizeAI is a full-stack, production-quality SaaS web application engineered to transform robotic AI text into clear, natural, engaging writing while preserving 100% of the original meaning.
 
 ---
 
@@ -93,14 +93,17 @@ Ready to deploy? Follow our complete [Render Deployment Guide](./RENDER_DEPLOYME
 
 ---
 
-## Pre-Seeded Test Credentials
+## Administrator Provisioning & Security
 
-| Role | Email | Password | Pre-loaded Plan |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `admin@humanizeai.com` | `AdminPass123!` | Business Plan (250,000 credits) |
-| **User** | `user@humanizeai.com` | `UserPass123!` | Pro Plan (50,000 credits) |
+ManaHumanizeAI enforces strict authentication, open redirect protection, and role-based access control.
 
-*You can also click the quick-login buttons on the `/login` page for instant access.*
+To create an initial Administrator account securely, configure environment variables before executing the seed script:
+
+```bash
+ADMIN_EMAIL="admin@yourdomain.com" ADMIN_PASSWORD="YourSecurePasswordHere!" node scripts/seed.mjs
+```
+
+In production on Render, set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in your Environment Variables dashboard. If omitted, no automatic accounts are generated, and accounts can only be registered through the standard secure registration flow.
 
 ---
 

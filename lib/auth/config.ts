@@ -77,19 +77,6 @@ const providers: NextAuthOptions["providers"] = [
         console.warn("Database lookup failed during auth:", dbErr);
       }
 
-      // 2. Emergency fallback credentials (only if DB lookup had an issue or initial seed)
-      if (
-        normalizedEmail === "admin@humanizeai.com" &&
-        credentials.password === "AdminPass123!"
-      ) {
-        return {
-          id: "admin-default-id",
-          name: "Admin User",
-          email: "admin@humanizeai.com",
-          role: "ADMIN",
-        };
-      }
-
       throw new Error("Invalid email or password. Please try again.");
     },
   }),
@@ -250,8 +237,24 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs starting with "/" (excluding protocol-relative "//" and "/\")
+      if (url.startsWith("/") && !url.startsWith("//") && !url.startsWith("/\\")) {
+        return `${baseUrl}${url}`;
+      }
+      // Allows callback URLs on the exact same origin
+      try {
+        const parsedUrl = new URL(url);
+        const parsedBase = new URL(baseUrl);
+        if (parsedUrl.origin === parsedBase.origin) {
+          return url;
+        }
+      } catch {}
+      // Default safe fallback
+      return `${baseUrl}/dashboard`;
+    },
   },
-  debug: true,
+  debug: process.env.NODE_ENV === "development",
   logger: {
     error(code, metadata) {
       console.error(`[NextAuth Error] [${code}]:`, metadata);
