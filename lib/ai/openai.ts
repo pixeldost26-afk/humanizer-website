@@ -29,14 +29,65 @@ export function cleanAndParseJson<T>(raw: string, fallback: T): T {
   // 2. Strip thinking/reasoning tags (e.g. <think>...</think>)
   let cleaned = raw.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
 
-  // 3. Strip Markdown code fences (```json ... ``` or ``` ...)
-  cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+  // 3. Extract code fence if present anywhere in text (e.g. ```json ... ```)
+  const fenceMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fenceMatch && fenceMatch[1]) {
+    cleaned = fenceMatch[1].trim();
+    try {
+      return JSON.parse(cleaned);
+    } catch {}
+  } else {
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+  }
 
   try {
     return JSON.parse(cleaned);
   } catch {}
 
-  // 4. Extract first balanced JSON object from { to }
+  // Helper: sanitize string literal bad control characters (newlines/tabs inside "")
+  const sanitizeControlChars = (str: string): string => {
+    let result = "";
+    let inString = false;
+    let escaped = false;
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      if (char === '"' && !escaped) {
+        inString = !inString;
+        result += char;
+      } else if (inString) {
+        if (char === "\\") {
+          escaped = !escaped;
+          result += char;
+        } else {
+          escaped = false;
+          if (char === "\n") result += "\\n";
+          else if (char === "\r") result += "\\r";
+          else if (char === "\t") result += "\\t";
+          else result += char;
+        }
+      } else {
+        escaped = false;
+        result += char;
+      }
+    }
+    return result;
+  };
+
+  // Helper: strip comments & trailing commas
+  const sanitizeJson = (str: string): string => {
+    return str
+      .replace(/\/\*[\s\S]*?\*\//g, "") // multi-line comments
+      .replace(/(^|[^:])\/\/[^\r\n]*/g, "$1") // single-line comments
+      .replace(/,\s*([}\]])/g, "$1"); // trailing commas
+  };
+
+  // 4. Try parsing after control char sanitization and comment stripping
+  try {
+    const s1 = sanitizeJson(sanitizeControlChars(cleaned));
+    return JSON.parse(s1);
+  } catch {}
+
+  // 5. Extract first balanced JSON object from { to }
   const firstBrace = cleaned.indexOf("{");
   const lastBrace = cleaned.lastIndexOf("}");
   if (firstBrace !== -1 && lastBrace > firstBrace) {
@@ -45,13 +96,13 @@ export function cleanAndParseJson<T>(raw: string, fallback: T): T {
       return JSON.parse(jsonSubstring);
     } catch {
       try {
-        const sanitized = jsonSubstring.replace(/,\s*([}\]])/g, "$1");
-        return JSON.parse(sanitized);
+        const s2 = sanitizeJson(sanitizeControlChars(jsonSubstring));
+        return JSON.parse(s2);
       } catch {}
     }
   }
 
-  // 5. Extract JSON array from [ to ]
+  // 6. Extract JSON array from [ to ]
   const firstBracket = cleaned.indexOf("[");
   const lastBracket = cleaned.lastIndexOf("]");
   if (firstBracket !== -1 && lastBracket > firstBracket) {
@@ -60,13 +111,110 @@ export function cleanAndParseJson<T>(raw: string, fallback: T): T {
       return JSON.parse(jsonSubstring);
     } catch {
       try {
-        const sanitized = jsonSubstring.replace(/,\s*([}\]])/g, "$1");
-        return JSON.parse(sanitized);
+        const s3 = sanitizeJson(sanitizeControlChars(jsonSubstring));
+        return JSON.parse(s3);
       } catch {}
     }
   }
 
+  // 7. Truncated JSON repair (if opening brace exists but closing was cut off)
+  if (firstBrace !== -1 && lastBrace <= firstBrace) {
+    try {
+      let partial = cleaned.slice(firstBrace);
+      const quoteCount = (partial.match(/(?<!\\)"/g) || []).length;
+      if (quoteCount % 2 !== 0) partial += '"';
+      partial = partial.replace(/[,:]\s*$/, "");
+      const openBrackets = (partial.match(/\[/g) || []).length;
+      const closeBrackets = (partial.match(/\]/g) || []).length;
+      for (let i = 0; i < openBrackets - closeBrackets; i++) partial += "]";
+      const openBraces = (partial.match(/\{/g) || []).length;
+      const closeBraces = (partial.match(/\}/g) || []).length;
+      for (let i = 0; i < openBraces - closeBraces; i++) partial += "}";
+      return JSON.parse(sanitizeJson(sanitizeControlChars(partial)));
+    } catch {}
+  }
+
   return fallback;
+}
+
+export function extractDiffCorrections(original: string, corrected: string): GrammarCorrection[] {
+  if (!original || !corrected || original === corrected) return [];
+  const corrections: GrammarCorrection[] = [];
+
+  const origWords = original.match(/\S+/g) || [];
+  const corrWords = corrected.match(/\S+/g) || [];
+
+  let oIdx = 0;
+  let cIdx = 0;
+
+  while (oIdx < origWords.length && cIdx < corrWords.length) {
+    const oWord = origWords[oIdx];
+    const cWord = corrWords[cIdx];
+
+    if (oWord === cWord) {
+      oIdx++;
+      cIdx++;
+      continue;
+    }
+
+    // Lookahead for resynchronization (up to 3 words)
+    let matchedO = -1;
+    let matchedC = -1;
+
+    for (let i = 0; i <= 3 && oIdx + i < origWords.length; i++) {
+      for (let j = 0; j <= 3 && cIdx + j < corrWords.length; j++) {
+        if (i === 0 && j === 0) continue;
+        if (origWords[oIdx + i] === corrWords[cIdx + j]) {
+          matchedO = oIdx + i;
+          matchedC = cIdx + j;
+          break;
+        }
+      }
+      if (matchedO !== -1) break;
+    }
+
+    let origChunk = "";
+    let corrChunk = "";
+
+    if (matchedO !== -1 && matchedC !== -1) {
+      origChunk = origWords.slice(oIdx, matchedO).join(" ");
+      corrChunk = corrWords.slice(cIdx, matchedC).join(" ");
+      oIdx = matchedO;
+      cIdx = matchedC;
+    } else {
+      origChunk = oWord;
+      corrChunk = cWord;
+      oIdx++;
+      cIdx++;
+    }
+
+    if (origChunk && corrChunk && origChunk !== corrChunk) {
+      const cleanO = origChunk.replace(/[^\w]/g, "").toLowerCase();
+      const cleanC = corrChunk.replace(/[^\w]/g, "").toLowerCase();
+      let type: GrammarCorrection["type"] = "grammar";
+      if (cleanO === cleanC) {
+        type = "punctuation";
+      } else if (cleanO.length === cleanC.length || Math.abs(cleanO.length - cleanC.length) <= 2) {
+        type = "spelling";
+      }
+
+      const start = original.indexOf(origChunk);
+      corrections.push({
+        id: `diff-corr-${corrections.length + 1}`,
+        original: origChunk,
+        replacement: corrChunk,
+        start: start >= 0 ? start : 0,
+        end: start >= 0 ? start + origChunk.length : origChunk.length,
+        type,
+        explanation:
+          type === "punctuation"
+            ? `Punctuation correction: "${origChunk}" -> "${corrChunk}"`
+            : `Suggested correction: "${origChunk}" -> "${corrChunk}"`,
+      });
+    }
+  }
+
+  return corrections;
 }
 
 export class OpenAICompatibleProvider implements IAIEngine {
@@ -552,19 +700,22 @@ Format output clearly with markdown headings.`;
   }
 
   async checkGrammar(text: string): Promise<GrammarResult> {
-    const systemPrompt = `You are an expert grammar and style editor.
-Analyze the user's text for grammatical errors, spelling mistakes, punctuation flaws, and clarity improvements.
-Respond ONLY with a valid JSON object matching this schema:
+    const systemPrompt = `You are an expert grammar, spelling, and style editor.
+Analyze the user's text for:
+1. Spelling mistakes and typos.
+2. Punctuation flaws (missing commas in lists/clauses, missing apostrophes in contractions like couldnt -> couldn't, dont -> don't, cant -> can't).
+3. Grammatical errors (subject-verb agreement, tense errors, incorrect homophones, syntax).
+4. Phrasing, clarity, and conciseness improvements.
+
+You MUST respond ONLY with a raw JSON object strictly matching this schema:
 {
-  "correctedText": "full corrected text with all fixes applied",
-  "issuesCount": 3,
+  "correctedText": "the complete text with all corrections and punctuation applied",
+  "issuesCount": 2,
   "corrections": [
     {
       "id": "corr-1",
-      "original": "error phrase from text",
+      "original": "error phrase from original text",
       "replacement": "suggested correction",
-      "start": 0,
-      "end": 3,
       "type": "spelling",
       "explanation": "concise explanation of why this was corrected"
     }
@@ -572,48 +723,82 @@ Respond ONLY with a valid JSON object matching this schema:
   "readabilityImprovement": "+15% enhanced clarity"
 }
 Allowed types for each correction: "spelling", "grammar", "punctuation", "style", "clarity".
-Output ONLY raw JSON. No markdown code blocks, no backticks, no comments.`;
+If the text is already completely free of errors, return:
+{
+  "correctedText": "exact original text",
+  "issuesCount": 0,
+  "corrections": [],
+  "readabilityImprovement": "Writing is clear and well-structured"
+}
+Output ONLY raw JSON. No markdown backticks, no comments, no intro text.`;
 
     let parsed: any = null;
+    let aiError: Error | null = null;
     try {
-      const jsonStr = await this.callChat(systemPrompt, text, true);
+      const jsonStr = await this.callChat(systemPrompt, text, true, 2500);
       parsed = cleanAndParseJson(jsonStr, null);
     } catch (err: any) {
+      aiError = err;
       console.warn("[AI Provider Grammar Warning]:", err.message);
     }
 
     const heuristicCorrections = runHeuristicGrammarCheck(text);
     let corrections: GrammarCorrection[] = [];
 
-    if (parsed && Array.isArray(parsed.corrections) && parsed.corrections.length > 0) {
-      corrections = parsed.corrections
-        .filter(
-          (c: any) =>
-            c &&
-            typeof c === "object" &&
-            typeof c.original === "string" &&
-            typeof c.replacement === "string" &&
-            c.original.trim() !== ""
-        )
+    // Support both parsed.corrections and parsed.issues schemas from LLMs
+    const rawList = Array.isArray(parsed)
+      ? parsed
+      : (parsed && (
+          (Array.isArray(parsed.corrections) && parsed.corrections) ||
+          (Array.isArray(parsed.issues) && parsed.issues) ||
+          (Array.isArray(parsed.errors) && parsed.errors) ||
+          (Array.isArray(parsed.suggestions) && parsed.suggestions) ||
+          (Array.isArray(parsed.items) && parsed.items)
+        )) || [];
+
+    if (rawList.length > 0) {
+      corrections = rawList
+        .filter((c: any) => c && typeof c === "object")
         .map((c: any, idx: number) => {
-          const typeStr = String(c.type || "grammar").toLowerCase();
+          const original = String(c.original || c.originalText || c.error || c.mistake || c.text || c.phrase || "").trim();
+          const replacement = String(c.replacement || c.correction || c.fix || c.suggested || c.suggestion || c.replace || "").trim();
+          if (!original && !replacement) return null;
+
+          const typeStr = String(c.type || c.category || c.errorType || "grammar").toLowerCase();
           const validTypes = ["spelling", "grammar", "punctuation", "style", "clarity"];
           const type = validTypes.includes(typeStr) ? (typeStr as GrammarCorrection["type"]) : "grammar";
 
-          let start = typeof c.start === "number" ? c.start : text.indexOf(c.original);
+          let start = typeof c.start === "number" ? c.start : text.indexOf(original);
           if (start < 0) start = 0;
-          let end = typeof c.end === "number" ? c.end : start + c.original.length;
+          let end = typeof c.end === "number" ? c.end : start + original.length;
+
+          const explanation = String(
+            c.explanation || c.reason || c.message || c.description ||
+            (replacement ? `Change "${original}" to "${replacement}"` : "Suggested correction")
+          );
 
           return {
             id: String(c.id || `corr-${idx + 1}`),
-            original: String(c.original),
-            replacement: String(c.replacement),
+            original: original || text.slice(start, end),
+            replacement,
             start,
             end,
             type,
-            explanation: String(c.explanation || `Suggested replacement: "${c.replacement}"`),
+            explanation,
           };
-        });
+        })
+        .filter((c: any): c is GrammarCorrection => c !== null && c.original.trim() !== "");
+    }
+
+    let correctedText = (parsed && typeof parsed.correctedText === "string" && parsed.correctedText.trim()) || "";
+
+    // Diff Fallback: If AI returned a rewritten correctedText that differs from original text,
+    // but the structured corrections array was empty or omitted, extract the diffs automatically!
+    if (correctedText && correctedText !== text && corrections.length === 0) {
+      const diffCorrections = extractDiffCorrections(text, correctedText);
+      if (diffCorrections.length > 0) {
+        corrections = diffCorrections;
+      }
     }
 
     // Merge any heuristic corrections missed by the AI
@@ -628,7 +813,11 @@ Output ONLY raw JSON. No markdown code blocks, no backticks, no comments.`;
       }
     }
 
-    let correctedText = (parsed && typeof parsed.correctedText === "string" && parsed.correctedText.trim()) || "";
+    // If AI failed and no heuristic corrections were found, rethrow actionable error
+    if (aiError && corrections.length === 0) {
+      throw new Error(aiError.message || "Failed to scan grammar. Please try again.");
+    }
+
     if (!correctedText) {
       correctedText = text;
       for (const corr of corrections) {

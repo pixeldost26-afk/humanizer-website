@@ -116,7 +116,141 @@ export const COMMON_GRAMMAR_RULES: HeuristicRule[] = [
     type: "spelling",
     explanation: 'Spelling error: "weird".',
   },
+  {
+    pattern: /\bcouldnt\b/gi,
+    replacement: "couldn't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "couldn\'t".',
+  },
+  {
+    pattern: /\bdont\b/gi,
+    replacement: "don't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "don\'t".',
+  },
+  {
+    pattern: /\bdidnt\b/gi,
+    replacement: "didn't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "didn\'t".',
+  },
+  {
+    pattern: /\bcant\b/gi,
+    replacement: "can't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "can\'t".',
+  },
+  {
+    pattern: /\bwont\b/gi,
+    replacement: "won't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "won\'t".',
+  },
+  {
+    pattern: /\bisnt\b/gi,
+    replacement: "isn't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "isn\'t".',
+  },
+  {
+    pattern: /\barent\b/gi,
+    replacement: "aren't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "aren\'t".',
+  },
+  {
+    pattern: /\bwasnt\b/gi,
+    replacement: "wasn't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "wasn\'t".',
+  },
+  {
+    pattern: /\bwerent\b/gi,
+    replacement: "weren't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "weren\'t".',
+  },
+  {
+    pattern: /\bhasnt\b/gi,
+    replacement: "hasn't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "hasn\'t".',
+  },
+  {
+    pattern: /\bhavent\b/gi,
+    replacement: "haven't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "haven\'t".',
+  },
+  {
+    pattern: /\bhadnt\b/gi,
+    replacement: "hadn't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "hadn\'t".',
+  },
+  {
+    pattern: /\bwouldnt\b/gi,
+    replacement: "wouldn't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "wouldn\'t".',
+  },
+  {
+    pattern: /\bshouldnt\b/gi,
+    replacement: "shouldn't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "shouldn\'t".',
+  },
+  {
+    pattern: /\bdoesnt\b/gi,
+    replacement: "doesn't",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "doesn\'t".',
+  },
+  {
+    pattern: /\btheyre\b/gi,
+    replacement: "they're",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "they\'re".',
+  },
+  {
+    pattern: /\byoure\b/gi,
+    replacement: "you're",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "you\'re".',
+  },
+  {
+    pattern: /\bweve\b/gi,
+    replacement: "we've",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "we\'ve".',
+  },
+  {
+    pattern: /\btheyve\b/gi,
+    replacement: "they've",
+    type: "punctuation",
+    explanation: 'Missing apostrophe in contraction: "they\'ve".',
+  },
+  {
+    pattern: /\bnoone\b/gi,
+    replacement: "no one",
+    type: "spelling",
+    explanation: '"no one" is two words.',
+  },
+  {
+    pattern: /\beverytime\b/gi,
+    replacement: "every time",
+    type: "spelling",
+    explanation: '"every time" is two words.',
+  },
 ];
+
+function matchCase(source: string, target: string): string {
+  if (!source || !target) return target;
+  if (source[0] === source[0].toUpperCase()) {
+    return target[0].toUpperCase() + target.slice(1);
+  }
+  return target;
+}
 
 export function runHeuristicGrammarCheck(text: string): GrammarCorrection[] {
   if (!text || typeof text !== "string") return [];
@@ -132,10 +266,11 @@ export function runHeuristicGrammarCheck(text: string): GrammarCorrection[] {
         (c) => match!.index >= c.start && match!.index < c.end
       );
       if (!existing) {
+        const replacementWithCase = matchCase(match[0], rule.replacement);
         corrections.push({
           id: `h-corr-${idx}-${match.index}`,
           original: match[0],
-          replacement: rule.replacement,
+          replacement: replacementWithCase,
           start: match.index,
           end: match.index + match[0].length,
           type: rule.type,

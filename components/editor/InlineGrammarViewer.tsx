@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { GrammarCorrection } from "@/lib/ai";
 import { Check, X, Sparkles, CheckCheck } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 
 interface InlineGrammarViewerProps {
   originalText: string;
+  correctedText?: string;
   corrections: GrammarCorrection[];
   onApplyAll: (newText: string) => void;
   onApplySingle: (corrId: string) => void;
@@ -14,6 +15,7 @@ interface InlineGrammarViewerProps {
 
 export function InlineGrammarViewer({
   originalText,
+  correctedText,
   corrections,
   onApplyAll,
   onApplySingle,
@@ -21,6 +23,12 @@ export function InlineGrammarViewer({
   const { toast } = useToast();
   const [dismissedIds, setDismissedIds] = useState<string[]>([]);
   const [acceptedIds, setAcceptedIds] = useState<string[]>([]);
+
+  // Critical fix: Reset dismissed and accepted IDs whenever new corrections arrive or text changes
+  useEffect(() => {
+    setDismissedIds([]);
+    setAcceptedIds([]);
+  }, [corrections]);
 
   const activeCorrections = corrections.filter(
     (c) => !dismissedIds.includes(c.id) && !acceptedIds.includes(c.id)
@@ -41,13 +49,18 @@ export function InlineGrammarViewer({
   };
 
   const handleAcceptAll = () => {
-    // Sequentially apply all active replacements
+    // If no items were dismissed and full correctedText is available, use it for optimal phrasing
     let newText = originalText;
-    corrections.forEach((c) => {
-      if (!dismissedIds.includes(c.id)) {
-        newText = newText.replace(c.original, c.replacement);
-      }
-    });
+    if (correctedText && dismissedIds.length === 0) {
+      newText = correctedText;
+    } else {
+      corrections.forEach((c) => {
+        if (!dismissedIds.includes(c.id)) {
+          newText = newText.replace(c.original, c.replacement);
+        }
+      });
+    }
+
     setAcceptedIds(corrections.map((c) => c.id));
     onApplyAll(newText);
     toast({
@@ -142,11 +155,15 @@ export function InlineGrammarViewer({
         ))}
 
         {activeCorrections.length === 0 && (
-          <div className="col-span-2 p-8 text-center rounded-xl bg-muted/20 border border-border">
+          <div className="col-span-1 md:col-span-2 p-8 text-center rounded-2xl bg-card border border-border/80 shadow-sm">
             <Sparkles className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-foreground">All clear!</p>
+            <p className="text-sm font-semibold text-foreground">
+              {acceptedIds.length > 0 ? "All Fixes Applied!" : "All clear!"}
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              No grammatical errors or style suggestions pending.
+              {acceptedIds.length > 0
+                ? "Your document has been updated with all accepted recommendations."
+                : "No grammatical errors or style suggestions found in this text."}
             </p>
           </div>
         )}
