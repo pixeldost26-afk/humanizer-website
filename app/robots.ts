@@ -1,12 +1,25 @@
 import { MetadataRoute } from "next";
+import { getSiteUrl } from "@/lib/config/site";
+
+export const dynamic = "force-dynamic";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = getSiteUrl();
 
   return {
     rules: {
       userAgent: "*",
-      allow: ["/", "/pricing", "/humanizer", "/ai-detector", "/ai-writer", "/paraphraser", "/grammar", "/summarizer", "/tone"],
+      allow: [
+        "/",
+        "/pricing",
+        "/humanizer",
+        "/ai-detector",
+        "/ai-writer",
+        "/paraphraser",
+        "/grammar",
+        "/summarizer",
+        "/tone",
+      ],
       disallow: ["/admin", "/api/", "/dashboard"],
     },
     sitemap: `${baseUrl}/sitemap.xml`,

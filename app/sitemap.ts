@@ -1,7 +1,10 @@
 import { MetadataRoute } from "next";
+import { getSiteUrl } from "@/lib/config/site";
+
+export const dynamic = "force-dynamic";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = getSiteUrl();
 
   const routes = [
     "",
@@ -15,15 +18,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/tone",
     "/login",
     "/signup",
+    "/forgot-password",
     "/privacy",
     "/terms",
   ];
 
-
-  return routes.map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: route === "" ? "daily" : "weekly",
-    priority: route === "" ? 1.0 : 0.8,
-  }));
+  return routes.map((route) => {
+    // Ensure homepage has trailing slash (https://manahumanize-ai.onrender.com/)
+    // and sub-routes are cleanly joined (https://manahumanize-ai.onrender.com/pricing)
+    const url = route === "" ? `${baseUrl}/` : `${baseUrl}${route}`;
+    return {
+      url,
+      lastModified: new Date(),
+      changeFrequency: route === "" ? "daily" : "weekly",
+      priority: route === "" ? 1.0 : 0.8,
+    };
+  });
 }

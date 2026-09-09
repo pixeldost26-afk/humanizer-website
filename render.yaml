@@ -31,10 +31,12 @@ services:
         value: gpt-4o-mini
       - key: NEXTAUTH_TRUST_HOST
         value: "true"
-      # Set NEXTAUTH_URL and NEXT_PUBLIC_APP_URL to your Render web service URL (e.g., https://humanize-ai.onrender.com)
-      - key: NEXTAUTH_URL
-        sync: false
+      # Production Domain & Sitemap Configuration
+      - key: SITE_URL
+        value: https://manahumanize-ai.onrender.com
       - key: NEXT_PUBLIC_APP_URL
+        value: https://manahumanize-ai.onrender.com
+      - key: NEXTAUTH_URL
         sync: false
       # Google OAuth 2.0 Credentials
       - key: GOOGLE_CLIENT_ID

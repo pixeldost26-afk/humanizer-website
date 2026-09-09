@@ -4,8 +4,10 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { ToastProvider } from "@/components/ui/toast";
+import { getSiteUrl } from "@/lib/config/site";
 
 const inter = Inter({ subsets: ["latin"] });
+const siteUrl = getSiteUrl();
 
 export const viewport: Viewport = {
   themeColor: [
@@ -32,7 +34,10 @@ export const metadata: Metadata = {
     "Text Rewriter",
   ],
   authors: [{ name: "ManahumanizeAI Team" }],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: "/",
+  },
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.svg",
