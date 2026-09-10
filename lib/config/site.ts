@@ -4,7 +4,7 @@
  * while safely filtering out deprecated legacy preview domains.
  */
 
-export const PRODUCTION_SITE_URL = "https://manahumanize-ai.onrender.com";
+export const PRODUCTION_SITE_URL = "https://humanize-ai-q8cr.onrender.com";
 
 export function getSiteUrl(): string {
   const candidates = [
@@ -19,10 +19,10 @@ export function getSiteUrl(): string {
     const trimmed = raw.trim().replace(/\/+$/, "");
     if (!trimmed) continue;
 
-    // Filter out obsolete/decommissioned Render domains
+    // Filter out obsolete/decommissioned domains
     if (
-      trimmed.includes("humanize-ai-q8cr.onrender.com") ||
-      trimmed.includes("humanize-ai-q8cr")
+      trimmed.includes("manahumanize-ai.onrender.com") ||
+      trimmed.includes("manahumanize-ai")
     ) {
       continue;
     }

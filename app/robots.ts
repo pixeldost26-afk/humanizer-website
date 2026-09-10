@@ -9,21 +9,17 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: [
-        "/",
-        "/pricing",
-        "/humanizer",
-        "/ai-detector",
-        "/ai-writer",
-        "/paraphraser",
-        "/grammar",
-        "/summarizer",
-        "/tone",
-        "/contact",
-        "/privacy",
-        "/terms",
+      allow: "/",
+      disallow: [
+        "/dashboard",
+        "/admin",
+        "/api/",
+        "/login",
+        "/signup",
+        "/forgot-password",
+        "/reset-password",
+        "/settings",
       ],
-      disallow: ["/admin", "/api/", "/dashboard"],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
   };

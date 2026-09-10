@@ -6,6 +6,18 @@ export default withAuth(
     const { pathname, search } = req.nextUrl;
     const token = req.nextauth?.token;
 
+    // 0. Ensure robots.txt, sitemap.xml, static assets, and public routes are never intercepted
+    if (
+      pathname === "/robots.txt" ||
+      pathname === "/sitemap.xml" ||
+      pathname === "/" ||
+      pathname.startsWith("/_next") ||
+      pathname.startsWith("/static") ||
+      pathname === "/favicon.svg"
+    ) {
+      return NextResponse.next();
+    }
+
     // 1. Enforce HTTPS in production behind reverse proxies (Render / Cloudflare)
     const proto = req.headers.get("x-forwarded-proto");
     const host = req.headers.get("host");

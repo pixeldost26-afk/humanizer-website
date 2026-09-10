@@ -33,9 +33,9 @@ services:
         value: "true"
       # Production Domain & Sitemap Configuration
       - key: SITE_URL
-        value: https://manahumanize-ai.onrender.com
+        value: https://humanize-ai-q8cr.onrender.com
       - key: NEXT_PUBLIC_APP_URL
-        value: https://manahumanize-ai.onrender.com
+        value: https://humanize-ai-q8cr.onrender.com
       - key: NEXTAUTH_URL
         sync: false
       # Google OAuth 2.0 Credentials
