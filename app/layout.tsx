@@ -92,6 +92,37 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem('humanize-theme');var d=t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)||(!t);if(t==='light')d=false;var el=document.documentElement;if(d){el.classList.add('dark');el.classList.remove('light');el.style.colorScheme='dark';}else{el.classList.remove('dark');el.classList.add('light');el.style.colorScheme='light';}}catch(e){}})();`,
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  "@id": `${siteUrl}/#website`,
+                  url: `${siteUrl}/`,
+                  name: "ManaHumanizeAI",
+                  description: "Transform AI-generated text into natural human writing with ManaHumanizeAI.",
+                  inLanguage: "en-US",
+                },
+                {
+                  "@type": "SoftwareApplication",
+                  "@id": `${siteUrl}/#software`,
+                  name: "ManaHumanizeAI",
+                  url: `${siteUrl}/`,
+                  applicationCategory: "BusinessApplication",
+                  operatingSystem: "All",
+                  offers: {
+                    "@type": "Offer",
+                    price: "0",
+                    priceCurrency: "USD",
+                  },
+                },
+              ],
+            }),
+          }}
+        />
       </head>
       <body
         className={`${inter.className} min-h-screen flex flex-col antialiased bg-background text-foreground`}

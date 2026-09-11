@@ -1,16 +1,16 @@
 /**
  * Central site configuration and canonical base URL resolution.
- * Prioritizes environment variables (SITE_URL, NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_APP_URL)
+ * Prioritizes environment variables (NEXT_PUBLIC_APP_URL, SITE_URL, NEXT_PUBLIC_SITE_URL)
  * while safely filtering out deprecated legacy preview domains.
  */
 
-export const PRODUCTION_SITE_URL = "https://humanize-ai-q8cr.onrender.com";
+export const PRODUCTION_SITE_URL = "https://manahumanize-ai.onrender.com";
 
 export function getSiteUrl(): string {
   const candidates = [
+    process.env.NEXT_PUBLIC_APP_URL,
     process.env.SITE_URL,
     process.env.NEXT_PUBLIC_SITE_URL,
-    process.env.NEXT_PUBLIC_APP_URL,
     process.env.NEXTAUTH_URL,
   ];
 
@@ -21,8 +21,16 @@ export function getSiteUrl(): string {
 
     // Filter out obsolete/decommissioned domains
     if (
-      trimmed.includes("manahumanize-ai.onrender.com") ||
-      trimmed.includes("manahumanize-ai")
+      trimmed.includes("humanize-ai-q8cr.onrender.com") ||
+      trimmed.includes("humanize-ai-q8cr")
+    ) {
+      continue;
+    }
+
+    // In production, ignore localhost/127.0.0.1 fallback
+    if (
+      process.env.NODE_ENV === "production" &&
+      (trimmed.includes("localhost") || trimmed.includes("127.0.0.1"))
     ) {
       continue;
     }
@@ -40,3 +48,4 @@ export function getSiteUrl(): string {
 
   return "http://localhost:3000";
 }
+

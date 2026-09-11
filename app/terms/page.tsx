@@ -6,6 +6,9 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Terms of Service — ManaHumanizeAI",
   description: "Terms and conditions governing the use of ManaHumanizeAI writing and detection tools.",
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 export default function TermsOfServicePage() {

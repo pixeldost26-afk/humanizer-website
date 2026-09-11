@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   title: "100% Free Access — ManaHumanizeAI",
   description:
     "ManaHumanizeAI is completely free to use with unlimited words. No billing plans, credit cards, or subscriptions required.",
+  alternates: {
+    canonical: "/pricing",
+  },
 };
 
 export default function PricingPage() {

@@ -6,6 +6,9 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy Policy — ManaHumanizeAI",
   description: "Learn how ManaHumanizeAI collects, protects, and handles your data and writing content.",
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 export default function PrivacyPolicyPage() {

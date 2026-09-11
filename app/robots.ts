@@ -19,8 +19,11 @@ export default function robots(): MetadataRoute.Robots {
         "/forgot-password",
         "/reset-password",
         "/settings",
+        "/billing",
+        "/history",
       ],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
   };
 }
+

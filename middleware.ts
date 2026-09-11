@@ -13,7 +13,10 @@ export default withAuth(
       pathname === "/" ||
       pathname.startsWith("/_next") ||
       pathname.startsWith("/static") ||
-      pathname === "/favicon.svg"
+      pathname === "/favicon.svg" ||
+      pathname.endsWith(".html") ||
+      pathname.endsWith(".xml") ||
+      pathname.endsWith(".txt")
     ) {
       return NextResponse.next();
     }
@@ -51,6 +54,22 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
+
+        // Never require authentication for public SEO endpoints or static files
+        if (
+          pathname === "/robots.txt" ||
+          pathname === "/sitemap.xml" ||
+          pathname === "/" ||
+          pathname.startsWith("/_next") ||
+          pathname.startsWith("/static") ||
+          pathname === "/favicon.svg" ||
+          pathname.endsWith(".html") ||
+          pathname.endsWith(".xml") ||
+          pathname.endsWith(".txt")
+        ) {
+          return true;
+        }
+
         // Require active token for all protected routes
         if (!token) return false;
         // Admin routes strictly require ADMIN role
