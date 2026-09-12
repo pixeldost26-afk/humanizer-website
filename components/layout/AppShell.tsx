@@ -52,42 +52,20 @@ export function AppShell({ children, title, description }: AppShellProps) {
   });
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
-    }
-  }, [status, pathname, router]);
+    fetch("/api/usage")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && data?.data?.balance) {
+          setUserCredits({
+            available: data.data.balance.available,
+            total: data.data.balance.total,
+            plan: data.data.plan,
+          });
+        }
+      })
+      .catch(() => {});
+  }, [pathname]);
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetch("/api/usage")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success && data.data) {
-            setUserCredits({
-              available: data.data.balance.available,
-              total: data.data.balance.total,
-              plan: data.data.plan,
-            });
-          }
-        })
-        .catch(() => {});
-    }
-  }, [pathname, status]);
-
-  if (status === "loading" || status === "unauthenticated") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg animate-pulse">
-            <Sparkles className="w-5 h-5" />
-          </div>
-          <p className="text-xs text-muted-foreground font-medium">
-            {status === "loading" ? "Loading studio..." : "Redirecting to Sign In..."}
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -188,54 +166,19 @@ export function AppShell({ children, title, description }: AppShellProps) {
 
         {/* User Account / Footer */}
         <div className="p-3 border-t border-border">
-          {session?.user ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 overflow-hidden">
-                {session.user.image ? (
-                  <img
-                    src={session.user.image}
-                    alt={session.user.name || "User"}
-                    className="w-8 h-8 rounded-full shrink-0 object-cover border border-border"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center text-xs shrink-0">
-                    {session.user.name ? session.user.name[0].toUpperCase() : "U"}
-                  </div>
-                )}
-                <div className="truncate">
-                  <p className="text-xs font-semibold text-foreground truncate">
-                    {session.user.name || "User"}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground truncate">
-                    {session.user.email}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors shrink-0"
-                title="Sign Out"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
+          <div className="flex items-center gap-2.5 p-2 rounded-xl bg-muted/40 border border-border">
+            <div className="w-8 h-8 rounded-full bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center text-xs shrink-0">
+              <Sparkles className="w-4 h-4" />
             </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/login"
-                className="flex-1 py-2 text-center rounded-xl border border-border hover:bg-muted text-xs font-semibold text-foreground transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/signup"
-                className="flex-1 py-2 text-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white transition-colors shadow-sm shadow-indigo-600/20"
-              >
-                Sign Up
-              </Link>
+            <div className="truncate">
+              <p className="text-xs font-semibold text-foreground truncate">
+                Free Instant Access
+              </p>
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
+                ● All Tools Unlocked
+              </p>
             </div>
-          )}
+          </div>
         </div>
       </aside>
 
@@ -349,55 +292,19 @@ export function AppShell({ children, title, description }: AppShellProps) {
             </div>
 
             <div className="pt-3 border-t border-border">
-              {session?.user ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2.5 px-2">
-                    {session.user.image ? (
-                      <img
-                        src={session.user.image}
-                        alt={session.user.name || "User"}
-                        className="w-7 h-7 rounded-full shrink-0 object-cover border border-border"
-                      />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center text-xs shrink-0">
-                        {session.user.name ? session.user.name[0].toUpperCase() : "U"}
-                      </div>
-                    )}
-                    <div className="truncate">
-                      <p className="text-xs font-semibold text-foreground truncate">
-                        {session.user.name || "User"}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground truncate">
-                        {session.user.email}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
-                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-border text-xs text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    Sign Out
-                  </button>
+              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-muted/40 border border-border">
+                <div className="w-8 h-8 rounded-full bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center text-xs shrink-0">
+                  <Sparkles className="w-4 h-4" />
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileNavOpen(false)}
-                    className="py-2.5 text-center rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/signup"
-                    onClick={() => setMobileNavOpen(false)}
-                    className="py-2.5 text-center rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
-                  >
-                    Sign Up
-                  </Link>
+                <div className="truncate">
+                  <p className="text-xs font-semibold text-foreground truncate">
+                    Free Instant Access
+                  </p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
+                    ● All Tools Unlocked
+                  </p>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

@@ -55,20 +55,22 @@ export async function POST(req: NextRequest) {
     const result = await engine.checkGrammar(text);
 
     try {
-      await prisma.generation.create({
-        data: {
-          userId: user.id,
-          tool: "GRAMMAR",
-          inputSnippet: text.slice(0, 150),
-          outputText: result.correctedText,
-          wordCount,
-          creditsCharged: creditResult.requiredCredits,
-          metadata: JSON.stringify({
-            issuesCount: result.issuesCount,
-            readabilityImprovement: result.readabilityImprovement,
-          }),
-        },
-      });
+      if (user.id !== "guest-user") {
+        await prisma.generation.create({
+          data: {
+            userId: user.id,
+            tool: "GRAMMAR",
+            inputSnippet: text.slice(0, 150),
+            outputText: result.correctedText,
+            wordCount,
+            creditsCharged: creditResult.requiredCredits,
+            metadata: JSON.stringify({
+              issuesCount: result.issuesCount,
+              readabilityImprovement: result.readabilityImprovement,
+            }),
+          },
+        });
+      }
     } catch (dbErr) {
       console.warn("[Database Grammar Save Error]:", dbErr);
     }

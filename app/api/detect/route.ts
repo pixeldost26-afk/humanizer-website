@@ -70,23 +70,25 @@ export async function POST(req: NextRequest) {
 
     // 6. Save generation record
     try {
-      await prisma.generation.create({
-        data: {
-          userId: user.id,
-          tool: "DETECTOR",
-          inputSnippet: text.slice(0, 150),
-          outputText: `Verdict: ${result.verdict} (AI: ${result.aiLikelihood}%, Human: ${result.humanLikelihood}%)`,
-          wordCount,
-          creditsCharged: creditResult.requiredCredits,
-          metadata: JSON.stringify({
-            aiLikelihood: result.aiLikelihood,
-            humanLikelihood: result.humanLikelihood,
-            verdict: result.verdict,
-            confidence: result.confidence,
-            indicators: result.indicators,
-          }),
-        },
-      });
+      if (user.id !== "guest-user") {
+        await prisma.generation.create({
+          data: {
+            userId: user.id,
+            tool: "DETECTOR",
+            inputSnippet: text.slice(0, 150),
+            outputText: `Verdict: ${result.verdict} (AI: ${result.aiLikelihood}%, Human: ${result.humanLikelihood}%)`,
+            wordCount,
+            creditsCharged: creditResult.requiredCredits,
+            metadata: JSON.stringify({
+              aiLikelihood: result.aiLikelihood,
+              humanLikelihood: result.humanLikelihood,
+              verdict: result.verdict,
+              confidence: result.confidence,
+              indicators: result.indicators,
+            }),
+          },
+        });
+      }
     } catch (dbErr) {
       console.warn("[Database Detector Save Error]:", dbErr);
     }

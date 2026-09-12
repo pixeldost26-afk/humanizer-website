@@ -55,17 +55,19 @@ export async function POST(req: NextRequest) {
     const result = await engine.paraphraseText(text, { mode });
 
     try {
-      await prisma.generation.create({
-        data: {
-          userId: user.id,
-          tool: "PARAPHRASER",
-          inputSnippet: text.slice(0, 150),
-          outputText: result.paraphrasedText,
-          wordCount: countWords(result.paraphrasedText),
-          creditsCharged: creditResult.requiredCredits,
-          metadata: JSON.stringify({ mode }),
-        },
-      });
+      if (user.id !== "guest-user") {
+        await prisma.generation.create({
+          data: {
+            userId: user.id,
+            tool: "PARAPHRASER",
+            inputSnippet: text.slice(0, 150),
+            outputText: result.paraphrasedText,
+            wordCount: countWords(result.paraphrasedText),
+            creditsCharged: creditResult.requiredCredits,
+            metadata: JSON.stringify({ mode }),
+          },
+        });
+      }
     } catch (dbErr) {
       console.warn("[Database Paraphrase Save Error]:", dbErr);
     }

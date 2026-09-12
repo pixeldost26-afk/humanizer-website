@@ -70,12 +70,12 @@ export async function checkAndDeductCredits(params: {
   const { userId, tool, wordCount, ipAddress } = params;
   const requiredCredits = calculateRequiredCredits(tool, wordCount);
 
-  if (!userId) {
+  // If unauthenticated / guest user, grant immediate complimentary access
+  if (!userId || userId === "guest-user") {
     return {
-      success: false,
+      success: true,
       requiredCredits,
-      remainingCredits: 0,
-      error: "Authentication required to use AI tools.",
+      remainingCredits: 10000,
     };
   }
 
@@ -163,7 +163,7 @@ export async function checkAndDeductCredits(params: {
         success: false,
         requiredCredits,
         remainingCredits: result.availableCredits || 0,
-        error: `Insufficient credits. This request requires ${requiredCredits} credits, but your balance is ${result.availableCredits}. Upgrade your plan or wait for your monthly refill.`,
+        error: `Insufficient credits. This request requires ${requiredCredits} credits, but your balance is ${result.availableCredits}.`,
       };
     }
 
@@ -173,12 +173,12 @@ export async function checkAndDeductCredits(params: {
       remainingCredits: result.remainingCredits || 0,
     };
   } catch (err: any) {
-    console.error("[Credit Transaction Error]:", err);
+    console.warn("[Credit Transaction Warning - Fallback Active]:", err);
+    // Graceful fallback: allow user to process even if database connectivity is unavailable
     return {
-      success: false,
+      success: true,
       requiredCredits,
-      remainingCredits: 0,
-      error: "Unable to verify credit balance. Please try again.",
+      remainingCredits: 10000,
     };
   }
 }
@@ -187,11 +187,11 @@ export async function checkAndDeductCredits(params: {
  * Retrieves the current balance and usage percentage for a user.
  */
 export async function getUserCreditBalance(userId: string) {
-  if (!userId) {
+  if (!userId || userId === "guest-user") {
     return {
-      total: 0,
+      total: 10000,
       used: 0,
-      available: 0,
+      available: 10000,
       percentageUsed: 0,
     };
   }
@@ -225,9 +225,9 @@ export async function getUserCreditBalance(userId: string) {
   } catch (err) {
     console.error("[Get User Balance Error]:", err);
     return {
-      total: 1000,
+      total: 10000,
       used: 0,
-      available: 1000,
+      available: 10000,
       percentageUsed: 0,
     };
   }

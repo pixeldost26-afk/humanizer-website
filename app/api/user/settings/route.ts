@@ -3,10 +3,48 @@ import { requireAuth } from "@/lib/auth/session";
 import { updateSettingsSchema } from "@/lib/validation/schemas";
 import prisma from "@/lib/db/client";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   const { user, response: authResponse } = await requireAuth();
   if (authResponse || !user) {
     return authResponse || NextResponse.json({ success: false, error: "Authentication required." }, { status: 401 });
+  }
+
+  if (user.id === "guest-user") {
+    return NextResponse.json({
+      success: true,
+      data: {
+        user: {
+          id: "guest-user",
+          name: "Guest",
+          email: "guest@manahumanize.com",
+          image: null,
+          role: "USER",
+          createdAt: new Date().toISOString(),
+        },
+        subscription: {
+          planId: "FREE",
+          status: "ACTIVE",
+        },
+        creditBalance: {
+          monthlyCredits: 10000,
+          usedCredits: 0,
+          bonusCredits: 0,
+        },
+        preference: {
+          theme: "system",
+          preferredTone: "Natural",
+          preferredStyle: "Standard",
+          preferredLanguage: "en",
+          emailAlerts: true,
+          productUpdates: true,
+          securityAlerts: true,
+          timezone: "UTC",
+        },
+      },
+      error: null,
+    });
   }
 
   try {
@@ -91,6 +129,22 @@ export async function PATCH(req: NextRequest) {
       securityAlerts,
       timezone,
     } = parseResult.data;
+
+    if (user.id === "guest-user") {
+      return NextResponse.json({
+        success: true,
+        message: "Preferences updated.",
+        data: {
+          preferredTone: preferredTone || "Natural",
+          preferredStyle: preferredStyle || "Standard",
+          preferredLanguage: preferredLanguage || "en",
+          emailAlerts: emailAlerts ?? true,
+          productUpdates: productUpdates ?? true,
+          securityAlerts: securityAlerts ?? true,
+          timezone: timezone || "UTC",
+        },
+      });
+    }
 
     // 1. Update user profile name if provided
     if (name && name.trim()) {

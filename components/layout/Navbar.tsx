@@ -188,41 +188,22 @@ export function Navbar() {
             )}
           </button>
 
-          {session?.user ? (
-            <div className="flex items-center gap-3">
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors border border-border"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </Link>
-              <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="p-2 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
-                title="Sign out"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/login"
-                className="px-4 py-2 rounded-xl text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/signup?callbackUrl=/humanizer"
-                prefetch={true}
-                className="btn-primary"
-              >
-                <Zap className="w-4 h-4" />
-                Try Free
-              </Link>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <Link
+              href="/ai-detector"
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold text-foreground/80 hover:text-foreground hover:bg-muted transition-colors border border-border/60"
+            >
+              AI Detector
+            </Link>
+            <Link
+              href="/humanizer"
+              prefetch={true}
+              className="btn-primary text-xs py-2 px-4 shadow-sm"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Launch Humanizer
+            </Link>
+          </div>
         </div>
 
         {/* Mobile menu hamburger */}
@@ -284,32 +265,23 @@ export function Navbar() {
           </div>
 
           <div className="border-t border-border pt-3 space-y-2">
-            {session?.user ? (
+            <div className="grid grid-cols-2 gap-2 pt-1">
               <Link
-                href="/dashboard"
+                href="/ai-detector"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm"
+                className="flex items-center justify-center py-2.5 rounded-xl border border-border text-xs font-semibold text-foreground"
               >
-                Go to Dashboard
+                AI Detector
               </Link>
-            ) : (
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <Link
-                  href="/login"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center py-2.5 rounded-xl border border-border text-sm font-medium"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/signup"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium"
-                >
-                  Get Started
-                </Link>
-              </div>
-            )}
+              <Link
+                href="/humanizer"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-md shadow-indigo-600/20"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Launch Humanizer
+              </Link>
+            </div>
           </div>
         </div>
       )}

@@ -1,116 +1,52 @@
-import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default withAuth(
-  function middleware(req) {
-    const { pathname, search } = req.nextUrl;
-    const token = req.nextauth?.token;
+export function middleware(req: NextRequest) {
+  const { pathname, search } = req.nextUrl;
 
-    // 0. Ensure robots.txt, sitemap.xml, static assets, and public routes are never intercepted
-    if (
-      pathname === "/robots.txt" ||
-      pathname === "/sitemap.xml" ||
-      pathname === "/" ||
-      pathname.startsWith("/_next") ||
-      pathname.startsWith("/static") ||
-      pathname === "/favicon.svg" ||
-      pathname.endsWith(".html") ||
-      pathname.endsWith(".xml") ||
-      pathname.endsWith(".txt")
-    ) {
-      return NextResponse.next();
-    }
-
-    // 1. Enforce HTTPS in production behind reverse proxies (Render / Cloudflare)
-    const proto = req.headers.get("x-forwarded-proto");
-    const host = req.headers.get("host");
-    if (
-      process.env.NODE_ENV === "production" &&
-      proto === "http" &&
-      host &&
-      !host.includes("localhost")
-    ) {
-      return NextResponse.redirect(`https://${host}${pathname}${search}`, 301);
-    }
-
-    // 2. Strict Role-Based Admin Protection
-    if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
-      if (!token || token.role !== "ADMIN") {
-        if (pathname.startsWith("/api/")) {
-          return NextResponse.json(
-            { success: false, error: "Access denied. Administrator role required." },
-            { status: 403 }
-          );
-        }
-        // Redirect non-admin authenticated users to /dashboard
-        const redirectUrl = new URL("/dashboard", req.url);
-        return NextResponse.redirect(redirectUrl);
-      }
-    }
-
+  // 0. Ensure robots.txt, sitemap.xml, static assets, and public routes are never intercepted
+  if (
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/" ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/static") ||
+    pathname === "/favicon.svg" ||
+    pathname.endsWith(".html") ||
+    pathname.endsWith(".xml") ||
+    pathname.endsWith(".txt")
+  ) {
     return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const { pathname } = req.nextUrl;
-
-        // Never require authentication for public SEO endpoints or static files
-        if (
-          pathname === "/robots.txt" ||
-          pathname === "/sitemap.xml" ||
-          pathname === "/" ||
-          pathname.startsWith("/_next") ||
-          pathname.startsWith("/static") ||
-          pathname === "/favicon.svg" ||
-          pathname.endsWith(".html") ||
-          pathname.endsWith(".xml") ||
-          pathname.endsWith(".txt")
-        ) {
-          return true;
-        }
-
-        // Require active token for all protected routes
-        if (!token) return false;
-        // Admin routes strictly require ADMIN role
-        if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
-          return token.role === "ADMIN";
-        }
-        return true;
-      },
-    },
-    pages: {
-      signIn: "/login",
-    },
   }
-);
+
+  // 1. Immediately redirect any login / signup / auth pages to /humanizer
+  if (
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password"
+  ) {
+    return NextResponse.redirect(new URL("/humanizer", req.url), 301);
+  }
+
+  // 2. Enforce HTTPS in production behind reverse proxies (Render / Cloudflare)
+  const proto = req.headers.get("x-forwarded-proto");
+  const host = req.headers.get("host");
+  if (
+    process.env.NODE_ENV === "production" &&
+    proto === "http" &&
+    host &&
+    !host.includes("localhost")
+  ) {
+    return NextResponse.redirect(`https://${host}${pathname}${search}`, 301);
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
-    "/admin",
-    "/admin/:path*",
-    "/api/admin/:path*",
-    "/dashboard",
-    "/dashboard/:path*",
-    "/humanizer",
-    "/humanizer/:path*",
-    "/ai-detector",
-    "/ai-detector/:path*",
-    "/ai-writer",
-    "/ai-writer/:path*",
-    "/paraphraser",
-    "/paraphraser/:path*",
-    "/grammar",
-    "/grammar/:path*",
-    "/summarizer",
-    "/summarizer/:path*",
-    "/tone",
-    "/tone/:path*",
-    "/history",
-    "/history/:path*",
-    "/settings",
-    "/settings/:path*",
-    "/billing",
-    "/billing/:path*",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
+

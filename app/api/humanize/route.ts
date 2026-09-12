@@ -79,33 +79,35 @@ export async function POST(req: NextRequest) {
 
     // 6. Record document and generation history in database
     try {
-      const createdDoc = await prisma.document.create({
-        data: {
-          userId: user.id,
-          title: `Humanized: ${text.slice(0, 35).trim()}...`,
-          content: result.humanizedText,
-          toolType: "HUMANIZER",
-          wordCount: result.humanizedWordCount,
-          charCount: result.humanizedText.length,
-        },
-      });
+      if (user.id !== "guest-user") {
+        const createdDoc = await prisma.document.create({
+          data: {
+            userId: user.id,
+            title: `Humanized: ${text.slice(0, 35).trim()}...`,
+            content: result.humanizedText,
+            toolType: "HUMANIZER",
+            wordCount: result.humanizedWordCount,
+            charCount: result.humanizedText.length,
+          },
+        });
 
-      await prisma.generation.create({
-        data: {
-          userId: user.id,
-          documentId: createdDoc.id,
-          tool: "HUMANIZER",
-          inputSnippet: text.slice(0, 150),
-          outputText: result.humanizedText,
-          wordCount: result.humanizedWordCount,
-          creditsCharged: creditResult.requiredCredits,
-          metadata: JSON.stringify({
-            mode,
-            readingEase: result.readingEase,
-            metrics: result.metrics,
-          }),
-        },
-      });
+        await prisma.generation.create({
+          data: {
+            userId: user.id,
+            documentId: createdDoc.id,
+            tool: "HUMANIZER",
+            inputSnippet: text.slice(0, 150),
+            outputText: result.humanizedText,
+            wordCount: result.humanizedWordCount,
+            creditsCharged: creditResult.requiredCredits,
+            metadata: JSON.stringify({
+              mode,
+              readingEase: result.readingEase,
+              metrics: result.metrics,
+            }),
+          },
+        });
+      }
     } catch (dbErr) {
       console.warn("[Database Save Error]:", dbErr);
     }

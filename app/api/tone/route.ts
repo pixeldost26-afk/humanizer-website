@@ -55,17 +55,19 @@ export async function POST(req: NextRequest) {
     const result = await engine.rewriteTone(text, { tone });
 
     try {
-      await prisma.generation.create({
-        data: {
-          userId: user.id,
-          tool: "TONE",
-          inputSnippet: text.slice(0, 150),
-          outputText: result.rewrittenText,
-          wordCount: result.wordCount,
-          creditsCharged: creditResult.requiredCredits,
-          metadata: JSON.stringify({ toneApplied: tone }),
-        },
-      });
+      if (user.id !== "guest-user") {
+        await prisma.generation.create({
+          data: {
+            userId: user.id,
+            tool: "TONE",
+            inputSnippet: text.slice(0, 150),
+            outputText: result.rewrittenText,
+            wordCount: result.wordCount,
+            creditsCharged: creditResult.requiredCredits,
+            metadata: JSON.stringify({ toneApplied: tone }),
+          },
+        });
+      }
     } catch (dbErr) {
       console.warn("[Database Tone Save Error]:", dbErr);
     }

@@ -79,34 +79,36 @@ export async function POST(req: NextRequest) {
 
     // 6. Save document and generation record
     try {
-      const docTitle = result.suggestedTitles?.[0] || `${contentType}: ${prompt.slice(0, 30)}`;
-      const createdDoc = await prisma.document.create({
-        data: {
-          userId: user.id,
-          title: docTitle,
-          content: result.content,
-          toolType: "WRITER",
-          wordCount: result.wordCount,
-          charCount: result.content.length,
-        },
-      });
+      if (user.id !== "guest-user") {
+        const docTitle = result.suggestedTitles?.[0] || `${contentType}: ${prompt.slice(0, 30)}`;
+        const createdDoc = await prisma.document.create({
+          data: {
+            userId: user.id,
+            title: docTitle,
+            content: result.content,
+            toolType: "WRITER",
+            wordCount: result.wordCount,
+            charCount: result.content.length,
+          },
+        });
 
-      await prisma.generation.create({
-        data: {
-          userId: user.id,
-          documentId: createdDoc.id,
-          tool: "WRITER",
-          inputSnippet: prompt.slice(0, 150),
-          outputText: result.content,
-          wordCount: result.wordCount,
-          creditsCharged: creditResult.requiredCredits,
-          metadata: JSON.stringify({
-            contentType,
-            tone,
-            suggestedTitles: result.suggestedTitles,
-          }),
-        },
-      });
+        await prisma.generation.create({
+          data: {
+            userId: user.id,
+            documentId: createdDoc.id,
+            tool: "WRITER",
+            inputSnippet: prompt.slice(0, 150),
+            outputText: result.content,
+            wordCount: result.wordCount,
+            creditsCharged: creditResult.requiredCredits,
+            metadata: JSON.stringify({
+              contentType,
+              tone,
+              suggestedTitles: result.suggestedTitles,
+            }),
+          },
+        });
+      }
     } catch (dbErr) {
       console.warn("[Database Writer Save Error]:", dbErr);
     }

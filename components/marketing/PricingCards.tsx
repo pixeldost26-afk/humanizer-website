@@ -116,14 +116,14 @@ export function PricingCards() {
 
                 <div className="pt-8 mt-6 border-t border-border/60">
                   <Link
-                    href={tier.id === "FREE" ? "/signup" : `/signup?plan=${tier.id}`}
+                    href={tier.id === "FREE" ? "/humanizer" : "/billing"}
                     className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-xs shadow-md transition-all ${
                       isPopular
                         ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/25 hover:scale-[1.02]"
                         : "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border"
                     }`}
                   >
-                    {tier.id === "FREE" ? "Get Started Free" : `Subscribe to ${tier.name}`}
+                    {tier.id === "FREE" ? "Use Free Now" : `Subscribe to ${tier.name}`}
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>

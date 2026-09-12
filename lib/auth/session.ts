@@ -2,24 +2,29 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "./config";
 import { NextResponse } from "next/server";
 
+export const GUEST_USER = {
+  id: "guest-user",
+  name: "Guest",
+  email: "guest@manahumanize.com",
+  role: "USER" as const,
+};
+
 export async function getCurrentUser() {
-  const session = await getServerSession(authOptions);
-  return session?.user as
-    | { id: string; name?: string; email: string; role: "USER" | "ADMIN"; image?: string }
-    | undefined;
+  try {
+    const session = await getServerSession(authOptions);
+    if (session?.user) {
+      return session.user as
+        | { id: string; name?: string; email: string; role: "USER" | "ADMIN"; image?: string }
+        | undefined;
+    }
+  } catch {
+    // ignore session retrieval error
+  }
+  return GUEST_USER;
 }
 
 export async function requireAuth() {
-  const user = await getCurrentUser();
-  if (!user) {
-    return {
-      user: null,
-      response: NextResponse.json(
-        { success: false, error: "Authentication required. Please sign in." },
-        { status: 401 }
-      ),
-    };
-  }
+  const user = (await getCurrentUser()) || GUEST_USER;
   return { user, response: null };
 }
 
@@ -41,3 +46,4 @@ export async function requireAdmin() {
 
   return { user, response: null };
 }
+

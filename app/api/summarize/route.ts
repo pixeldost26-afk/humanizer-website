@@ -55,21 +55,23 @@ export async function POST(req: NextRequest) {
     const result = await engine.summarizeText(text, { mode });
 
     try {
-      await prisma.generation.create({
-        data: {
-          userId: user.id,
-          tool: "SUMMARIZER",
-          inputSnippet: text.slice(0, 150),
-          outputText: result.summary,
-          wordCount: result.summaryWordCount,
-          creditsCharged: creditResult.requiredCredits,
-          metadata: JSON.stringify({
-            mode,
-            compressionRatio: result.compressionRatio,
-            keyTakeaways: result.keyTakeaways,
-          }),
-        },
-      });
+      if (user.id !== "guest-user") {
+        await prisma.generation.create({
+          data: {
+            userId: user.id,
+            tool: "SUMMARIZER",
+            inputSnippet: text.slice(0, 150),
+            outputText: result.summary,
+            wordCount: result.summaryWordCount,
+            creditsCharged: creditResult.requiredCredits,
+            metadata: JSON.stringify({
+              mode,
+              compressionRatio: result.compressionRatio,
+              keyTakeaways: result.keyTakeaways,
+            }),
+          },
+        });
+      }
     } catch (dbErr) {
       console.warn("[Database Summarize Save Error]:", dbErr);
     }

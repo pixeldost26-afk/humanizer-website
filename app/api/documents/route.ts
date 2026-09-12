@@ -11,6 +11,10 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    if (user.id === "guest-user") {
+      return NextResponse.json({ success: true, data: [], error: null });
+    }
+
     const { searchParams } = new URL(req.url);
     const tool = searchParams.get("tool");
     const search = searchParams.get("search");
@@ -132,6 +136,25 @@ export async function POST(req: NextRequest) {
     const { title, content, toolType, tags } = parsed.data;
     const wordCount = countWords(content);
     const charCount = countCharacters(content);
+
+    if (user.id === "guest-user") {
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: `guest-doc-${Date.now()}`,
+          userId: "guest-user",
+          title,
+          content,
+          toolType,
+          wordCount,
+          charCount,
+          tags: tags || null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        error: null,
+      });
+    }
 
     const doc = await prisma.document.create({
       data: {

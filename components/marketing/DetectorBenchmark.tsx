@@ -201,7 +201,7 @@ export function DetectorBenchmark() {
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
             <span>Ready to test your own essay, article, or business draft?</span>
             <Link
-              href="/signup?callbackUrl=/humanizer"
+              href="/humanizer"
               prefetch={true}
               className="btn-primary text-xs shrink-0 active:scale-[0.98] transition-all"
             >

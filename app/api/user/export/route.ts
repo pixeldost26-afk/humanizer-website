@@ -2,10 +2,34 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/session";
 import prisma from "@/lib/db/client";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   const { user, response: authResponse } = await requireAuth();
   if (authResponse || !user) {
     return authResponse || NextResponse.json({ success: false, error: "Authentication required." }, { status: 401 });
+  }
+
+  if (user.id === "guest-user") {
+    const exportPayload = {
+      exportedAt: new Date().toISOString(),
+      platform: "ManaHumanizeAI",
+      account: {
+        id: "guest-user",
+        name: "Guest",
+        email: "guest@manahumanize.com",
+        role: "USER",
+        documents: [],
+        generations: [],
+      },
+    };
+    return new NextResponse(JSON.stringify(exportPayload, null, 2), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename="manahumanizeai-data-guest.json"`,
+      },
+    });
   }
 
   try {

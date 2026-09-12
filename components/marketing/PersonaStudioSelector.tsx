@@ -192,7 +192,7 @@ export function PersonaStudioSelector() {
               <strong>Ideal for:</strong> {selectedPersona.bestFor}
             </div>
             <Link
-              href="/signup?callbackUrl=/humanizer"
+              href="/humanizer"
               prefetch={true}
               className="btn-primary text-xs shrink-0 flex items-center gap-1.5 active:scale-[0.98] transition-all"
             >

@@ -12,9 +12,7 @@ interface SitemapEntry {
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = getSiteUrl();
 
-  // Only include publicly accessible, indexable pages.
-  // Private tool routes (which require authentication and redirect to /login)
-  // as well as API endpoints and auth flows are strictly excluded.
+  // Publicly accessible, indexable pages and tools.
   const publicRoutes: SitemapEntry[] = [
     {
       path: "",
@@ -22,9 +20,44 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
-      path: "/pricing",
+      path: "/humanizer",
+      changeFrequency: "daily",
+      priority: 0.95,
+    },
+    {
+      path: "/ai-detector",
+      changeFrequency: "daily",
+      priority: 0.95,
+    },
+    {
+      path: "/paraphraser",
       changeFrequency: "weekly",
       priority: 0.9,
+    },
+    {
+      path: "/ai-writer",
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      path: "/grammar",
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      path: "/summarizer",
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    {
+      path: "/tone",
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    {
+      path: "/pricing",
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
     {
       path: "/contact",

@@ -19,6 +19,30 @@ const nextConfig = {
   images: {
     domains: ['images.unsplash.com', 'avatars.githubusercontent.com', 'lh3.googleusercontent.com'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/login',
+        destination: '/humanizer',
+        permanent: true,
+      },
+      {
+        source: '/signup',
+        destination: '/humanizer',
+        permanent: true,
+      },
+      {
+        source: '/forgot-password',
+        destination: '/humanizer',
+        permanent: true,
+      },
+      {
+        source: '/reset-password',
+        destination: '/humanizer',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
