@@ -76,6 +76,9 @@ export const metadata: Metadata = {
     title: "ManaHumanizeAI – AI Text Humanizer",
     description: "Transform AI-generated text into natural human writing with ManaHumanizeAI.",
   },
+  other: {
+    "google-adsense-account": "ca-pub-7770205584734489",
+  },
 };
 
 
@@ -87,6 +90,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        {/* Google AdSense Verification and Ad Script */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7770205584734489"
+          crossOrigin="anonymous"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('humanize-theme');var d=t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)||(!t);if(t==='light')d=false;var el=document.documentElement;if(d){el.classList.add('dark');el.classList.remove('light');el.style.colorScheme='dark';}else{el.classList.remove('dark');el.classList.add('light');el.style.colorScheme='light';}}catch(e){}})();`,
