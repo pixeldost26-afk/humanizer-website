@@ -12,8 +12,8 @@ services:
     name: MANAHUMANIZE-AI
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
-    startCommand: npm run start:prod
+    buildCommand: npm install && npx prisma db push && npm run build
+    startCommand: npm run start
     envVars:
       - key: DATABASE_URL
         fromDatabase:
